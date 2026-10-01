@@ -1,0 +1,283 @@
+diff --git a/jiuwenswarm/common/team_artifacts.py b/jiuwenswarm/common/team_artifacts.py
+index f96db15..9b92a6c 100644
+--- a/jiuwenswarm/common/team_artifacts.py
++++ b/jiuwenswarm/common/team_artifacts.py
+@@ -29,6 +29,7 @@ not the shared member workspace (which mixes internal data with scratch).
+ from __future__ import annotations
+ 
+ import os
++import hashlib
+ from dataclasses import dataclass
+ from pathlib import Path
+ 
+@@ -136,9 +137,68 @@ def resolve_member_work_dir(
+     return work_dir
+ 
+ 
++def build_artifact_manifest(
++    root_dir: str | os.PathLike[str],
++    paths: list[str | os.PathLike[str]],
++) -> dict:
++    """Describe explicit task outputs using portable paths and SHA-256.
++
++    Call after writers finish. This is an integrity check, not an authenticity
++    signature or a filesystem sandbox. Symlinks resolving outside root are
++    rejected. The caller owns persistence and synchronization.
++    """
++    root = Path(root_dir).resolve(strict=True)
++    entries = []
++    seen = set()
++    for value in paths:
++        path = Path(value)
++        path = (path if path.is_absolute() else root / path).resolve(strict=True)
++        relative = path.relative_to(root).as_posix()
++        if relative in seen or not path.is_file():
++            raise ValueError(f"duplicate or non-file artifact: {relative}")
++        seen.add(relative)
++        checksum = hashlib.sha256()
++        size = 0
++        with path.open("rb") as stream:
++            for block in iter(lambda: stream.read(1024 * 1024), b""):
++                checksum.update(block)
++                size += len(block)
++        entries.append({"path": relative, "bytes": size, "sha256": checksum.hexdigest()})
++    return {"schema_version": 1, "artifacts": sorted(entries, key=lambda x: x["path"])}
++
++
++def verify_artifact_manifest(root_dir: str | os.PathLike[str], manifest: dict) -> list[str]:
++    """Return integrity errors, including malformed or escaping manifest entries."""
++    if not isinstance(manifest, dict) or manifest.get("schema_version") != 1:
++        return ["unsupported artifact manifest"]
++    entries = manifest.get("artifacts")
++    if not isinstance(entries, list) or not entries:
++        return ["artifact manifest is empty or malformed"]
++    errors = []
++    seen = set()
++    for entry in entries:
++        try:
++            if not isinstance(entry, dict) or set(entry) != {"path", "bytes", "sha256"}:
++                raise ValueError("malformed artifact entry")
++            value = entry["path"]
++            if not isinstance(value, str) or not value or Path(value).is_absolute():
++                raise ValueError("artifact path must be relative")
++            if value in seen:
++                raise ValueError("duplicate manifest path")
++            seen.add(value)
++            current = build_artifact_manifest(root_dir, [value])["artifacts"][0]
++            if current != entry:
++                errors.append(f"artifact changed: {value}")
++        except (OSError, ValueError, TypeError) as exc:
++            errors.append(str(exc))
++    return errors
++
++
+ __all__ = [
+     "TeamArtifactWorkspace",
+     "get_team_artifacts_dir",
+     "get_team_artifact_workspace",
+     "resolve_member_work_dir",
++    "build_artifact_manifest",
++    "verify_artifact_manifest",
+ ]
+diff --git a/jiuwenswarm/common/research_budget.py b/jiuwenswarm/common/research_budget.py
+new file mode 100644
+index 0000000..8f12451
+--- /dev/null
++++ b/jiuwenswarm/common/research_budget.py
+@@ -0,0 +1,50 @@
++"""Explicit, serializable attempt admission for bounded research workflows.
++
++The caller must persist a reservation BEFORE starting work and synchronize
++access (for example with its existing workspace lock). Reservations are never
++refunded: crashes and retries consume capacity. No wall-clock billing is implied.
++"""
++
++import math
++
++
++class BudgetExceeded(RuntimeError):
++    """No new execution may be admitted within the declared limits."""
++
++
++def reserve_research_attempt(ledger: dict, label: str, timeout_seconds: float) -> dict:
++    """Return a new ledger with one reserved attempt, without mutating input.
++
++    max_timeout_seconds caps the SUM of admitted subprocess wait timeouts,
++    not total elapsed time (startup, reports and process cleanup add overhead).
++    """
++    if not isinstance(ledger, dict) or set(ledger) != {
++        "max_attempts", "max_timeout_seconds", "reservations"
++    }:
++        raise ValueError("Malformed research budget ledger")
++    limit, seconds, reservations = (ledger[k] for k in
++                                    ("max_attempts", "max_timeout_seconds", "reservations"))
++    if type(limit) is not int or limit < 1:
++        raise ValueError("max_attempts must be a positive integer")
++    if type(seconds) not in (int, float) or not math.isfinite(seconds) or seconds <= 0:
++        raise ValueError("max_timeout_seconds must be positive and finite")
++    if not isinstance(reservations, list):
++        raise ValueError("reservations must be a list")
++    if not isinstance(label, str) or not label:
++        raise ValueError("label must be nonempty")
++    if type(timeout_seconds) not in (int, float) or not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
++        raise ValueError("timeout_seconds must be positive and finite")
++    used = 0.0
++    for reservation in reservations:
++        if not isinstance(reservation, dict) or set(reservation) != {"label", "timeout_seconds"}:
++            raise ValueError("Malformed reservation")
++        value = reservation["timeout_seconds"]
++        if (not isinstance(reservation["label"], str) or not reservation["label"]
++                or type(value) not in (int, float) or not math.isfinite(value) or value <= 0):
++            raise ValueError("Malformed reservation value")
++        used += value
++    if len(reservations) >= limit or used + timeout_seconds > seconds:
++        raise BudgetExceeded("Research attempt/timeout allocation budget exhausted")
++    return {"max_attempts": limit, "max_timeout_seconds": seconds,
++            "reservations": [dict(item) for item in reservations] +
++                            [{"label": label, "timeout_seconds": timeout_seconds}]}
+diff --git a/tests/unit_tests/common/test_research_artifacts.py b/tests/unit_tests/common/test_research_artifacts.py
+new file mode 100644
+--- /dev/null
++++ b/tests/unit_tests/common/test_research_artifacts.py
+@@ -0,0 +1,69 @@
++import shutil
++
++import pytest
++
++from jiuwenswarm.common.team_artifacts import build_artifact_manifest, verify_artifact_manifest
++
++
++def test_manifest_survives_relocation(tmp_path):
++    root = tmp_path / "before"
++    root.mkdir()
++    (root / "evidence.json").write_text('{"score": 0.5}', encoding="utf-8")
++    manifest = build_artifact_manifest(root, ["evidence.json"])
++    moved = tmp_path / "after"
++    shutil.copytree(root, moved)
++    assert verify_artifact_manifest(moved, manifest) == []
++    (moved / "evidence.json").write_text('{"score": 0.9}', encoding="utf-8")
++    assert verify_artifact_manifest(moved, manifest)
++
++
++def test_missing_file_is_reported(tmp_path):
++    path = tmp_path / "file"
++    path.write_bytes(b"original")
++    manifest = build_artifact_manifest(tmp_path, ["file"])
++    path.unlink()
++    assert verify_artifact_manifest(tmp_path, manifest)
++
++
++def test_escape_is_rejected(tmp_path):
++    root = tmp_path / "root"
++    root.mkdir()
++    (tmp_path / "outside").write_text("not an artifact", encoding="utf-8")
++    with pytest.raises(ValueError):
++        build_artifact_manifest(root, ["../outside"])
++    assert verify_artifact_manifest(root, {"schema_version": 1, "artifacts": [
++        {"path": "../outside", "bytes": 15, "sha256": "x"}]})
++
++
++def test_duplicate_entries_are_rejected(tmp_path):
++    (tmp_path / "file").write_bytes(b"123")
++    with pytest.raises(ValueError):
++        build_artifact_manifest(tmp_path, ["file", "file"])
++    manifest = build_artifact_manifest(tmp_path, ["file"])
++    manifest["artifacts"] *= 2
++    assert verify_artifact_manifest(tmp_path, manifest)
++
++
++@pytest.mark.parametrize("manifest", [{}, {"schema_version": 1, "artifacts": []},
++                                     {"schema_version": 1, "artifacts": [None]},
++                                     {"schema_version": 1, "artifacts": [{"path": 4}]}])
++def test_malformed_manifests_fail_closed(tmp_path, manifest):
++    assert verify_artifact_manifest(tmp_path, manifest)
++
++
++from copy import deepcopy
++from jiuwenswarm.common.research_budget import BudgetExceeded, reserve_research_attempt
++
++def test_budget_reservations_are_pure_and_bounded():
++    ledger = {"max_attempts": 2, "max_timeout_seconds": 15, "reservations": []}
++    first = reserve_research_attempt(ledger, "one", 10)
++    assert ledger["reservations"] == []
++    with pytest.raises(BudgetExceeded):
++        reserve_research_attempt(first, "two", 10)
++    second = reserve_research_attempt(first, "two", 5)
++    with pytest.raises(BudgetExceeded):
++        reserve_research_attempt(second, "three", 0.1)
++    corrupted = deepcopy(second)
++    corrupted["reservations"][0]["timeout_seconds"] = -1
++    with pytest.raises(ValueError):
++        reserve_research_attempt(corrupted, "four", 1)
+diff --git a/jiuwenswarm/common/research_runtime.py b/jiuwenswarm/common/research_runtime.py
+new file mode 100644
+--- /dev/null
++++ b/jiuwenswarm/common/research_runtime.py
+@@ -0,0 +1,40 @@
++"""Load the upstream standalone SwarmFlow engine without service dependencies.
++
++This is source loading, not an engine reimplementation. Relative engine imports
++retain their package identity; no openjiuwen package is replaced or mocked.
++"""
++import hashlib
++import importlib.util
++import sys
++from pathlib import Path
++
++
++def load_research_engine(agent_core_root):
++    source = Path(agent_core_root).resolve() / "openjiuwen/agent_teams/workflow/engine"
++    if not (source / "runner.py").is_file():
++        raise FileNotFoundError("A pinned agent-core checkout is required")
++    identity = hashlib.sha256(str(source).encode()).hexdigest()[:16]
++    name = "_jiuwen_research_engine_" + identity
++    if name not in sys.modules:
++        spec = importlib.util.spec_from_file_location(name, source / "__init__.py",
++                                                     submodule_search_locations=[str(source)])
++        module = importlib.util.module_from_spec(spec)
++        sys.modules[name] = module
++        try:
++            spec.loader.exec_module(module)
++        except BaseException:
++            sys.modules.pop(name, None)
++            raise
++    return sys.modules[name]
++
++
++def evidence_gate(claims, evidence):
++    """Fail closed on unsupported claims and modified evidence artifacts."""
++    for claim in claims:
++        if not claim.get("evidence_ids"):
++            raise ValueError("Claim has no evidence: " + claim["id"])
++        for key in claim["evidence_ids"]:
++            item = evidence[key]
++            if hashlib.sha256(Path(item["path"]).read_bytes()).hexdigest() != item["sha256"]:
++                raise ValueError("Evidence changed: " + key)
++    return True
+diff --git a/tests/unit_tests/common/test_research_runtime.py b/tests/unit_tests/common/test_research_runtime.py
+new file mode 100644
+--- /dev/null
++++ b/tests/unit_tests/common/test_research_runtime.py
+@@ -0,0 +1,22 @@
++"""Evidence gate tests for the optional research integration."""
++import hashlib
++import pytest
++from jiuwenswarm.common.research_runtime import evidence_gate, load_research_engine
++
++def test_missing_engine_fails_explicitly(tmp_path):
++    with pytest.raises(FileNotFoundError):
++        load_research_engine(tmp_path)
++
++def test_missing_evidence_and_modified_content_fail(tmp_path):
++    path = tmp_path / "result.json"
++    path.write_text("original")
++    evidence = {"result": {"path": str(path), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}}
++    claims = [{"id": "claim", "evidence_ids": ["result"]}]
++    assert evidence_gate(claims, evidence)
++    path.write_text("changed")
++    with pytest.raises(ValueError, match="Evidence changed"):
++        evidence_gate(claims, evidence)
++    with pytest.raises(ValueError, match="no evidence"):
++        evidence_gate([{"id": "claim", "evidence_ids": []}], evidence)
++    with pytest.raises(KeyError):
++        evidence_gate(claims, {})

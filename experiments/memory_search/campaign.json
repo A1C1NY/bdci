@@ -1,0 +1,29 @@
+{
+  "schema_version": 2,
+  "title": "Bounded Offline Search for Event-Stream Memory Policies",
+  "question": "Under an eight-record memory budget, how do filtering, overwrite and eviction rules affect synthetic latest-value recall?",
+  "hypothesis": "Filtering distractors and replacing stale values may improve recall compared with retaining the last eight events.",
+  "experiment": "experiment.py",
+  "baseline": "recent_window",
+  "candidates": ["events_only", "keyed_memory", "fifo_memory"],
+  "ablations": ["first_write"],
+  "development_seeds": [11, 23, 37],
+  "holdout_seeds": [101, 211, 307, 401, 503],
+  "primary_metric": "accuracy",
+  "direction": "maximize",
+  "timeout_seconds": 10,
+  "max_attempts": 2,
+  "budget": {"max_attempts": 80, "max_timeout_seconds": 800},
+  "search": {"max_trials": 3, "patience": 2, "min_improvement": 0.005},
+  "limitations": [
+    "This is a hand-designed CPU benchmark, not a novel research result or a model capability evaluation.",
+    "Eight records do not imply equal token counts or serialized bytes; byte costs are reported separately.",
+    "The generator favors latest-value storage and does not represent natural-language agent tasks.",
+    "Candidates and code are human-authored; the local planner performs bounded ordered search, not autonomous code generation.",
+    "Holdout seeds share the same generator distribution. Distribution shift and real task generalization are not tested.",
+    "The first-write ablation is a fixed diagnostic comparison; it is not used for candidate selection."
+  ],
+  "sources": [
+    {"id": "local_protocol", "title": "Local synthetic memory protocol v2", "url": "", "local_file": "protocol.md", "note": "Human-authored benchmark specification; this is not published literature and makes no novelty claim."}
+  ]
+}

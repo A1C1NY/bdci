@@ -1,0 +1,56 @@
+{
+  "stale": [
+    {
+      "path": "data/stale/README.md",
+      "url": "https://huggingface.co/datasets/STALEproj/STALE/resolve/617c51dc200b5ab09970834144c7e51c77959af0/README.md",
+      "sha256": "475c84cc2b745746895691ae95d9386bd30b1be584e9ba7562236a9c0f7b0a38"
+    },
+    {
+      "path": "data/stale/LICENSE",
+      "url": "https://huggingface.co/datasets/STALEproj/STALE/resolve/617c51dc200b5ab09970834144c7e51c77959af0/LICENSE",
+      "sha256": "f5b745ef98087f531e719ee8ca6a96809444573ecc7173c6fa68eaad39b3cc3f"
+    },
+    {
+      "path": "data/stale/LongMemEval_LICENSE",
+      "url": "https://huggingface.co/datasets/STALEproj/STALE/resolve/617c51dc200b5ab09970834144c7e51c77959af0/LongMemEval_LICENSE",
+      "sha256": "0ec577719a69e112e75157b0dc5acfa68dd6c98bca6c5c830a036348c8a5987e"
+    },
+    {
+      "path": "data/stale/T1_T2_400_FULL.json",
+      "url": "https://huggingface.co/datasets/STALEproj/STALE/resolve/617c51dc200b5ab09970834144c7e51c77959af0/T1_T2_400_FULL.json",
+      "sha256": "5f3ec375179e20e2e94469e018189188f34e2e7e5f21cbecbd99fcfa648c1876"
+    }
+  ],
+  "iclr": [
+    {
+      "path": "references/templates/iclr2026/fancyhdr.sty",
+      "url": "https://raw.githubusercontent.com/ICLR/Master-Template/master/iclr2026/fancyhdr.sty",
+      "sha256": "b56ec4434b9f4607529a4b23dc68ad8d4b94f1f631c8cddaf7da78140d53a5ea"
+    },
+    {
+      "path": "references/templates/iclr2026/iclr2026_conference.bst",
+      "url": "https://raw.githubusercontent.com/ICLR/Master-Template/master/iclr2026/iclr2026_conference.bst",
+      "sha256": "2d67552db7ed38ccfccb5957b52f95656e25c249724761d3cf5f7922ad1844c5"
+    },
+    {
+      "path": "references/templates/iclr2026/iclr2026_conference.sty",
+      "url": "https://raw.githubusercontent.com/ICLR/Master-Template/master/iclr2026/iclr2026_conference.sty",
+      "sha256": "a4852f68e080d6c5245057ca2039100b409e31727898aa93c03d78ddb84374a3"
+    },
+    {
+      "path": "references/templates/iclr2026/iclr2026_conference.tex",
+      "url": "https://raw.githubusercontent.com/ICLR/Master-Template/master/iclr2026/iclr2026_conference.tex",
+      "sha256": "941b58de6e52f5538de0ebfe2d20425a79e1768cb271d453b7436904b5159859"
+    },
+    {
+      "path": "references/templates/iclr2026/math_commands.tex",
+      "url": "https://raw.githubusercontent.com/ICLR/Master-Template/master/iclr2026/math_commands.tex",
+      "sha256": "90473c4d0542070db244cea73ef962d6cddc5b2a746757e6a40ddf5fdfb90ba9"
+    },
+    {
+      "path": "references/templates/iclr2026/natbib.sty",
+      "url": "https://raw.githubusercontent.com/ICLR/Master-Template/master/iclr2026/natbib.sty",
+      "sha256": "88bc70c0e48461934cab5b2accef06b74a8b3ac45ad03ccd3f2a6b7e0d6d530d"
+    }
+  ]
+}

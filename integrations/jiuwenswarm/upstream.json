@@ -1,0 +1,10 @@
+{
+  "repository": "https://github.com/openJiuwen-ai/jiuwenswarm.git",
+  "branch_at_checkout": "develop",
+  "commit": "ce8af2051fd7c5dff85a09f8185fce64d32893a6",
+  "captured_on": "2026-09-29",
+  "modified_files": ["jiuwenswarm/common/team_artifacts.py", "jiuwenswarm/common/research_budget.py"],
+  "license": "Apache-2.0",
+  "lfs": "Source checkout completed with GIT_LFS_SKIP_SMUDGE=1 because the upstream introduction video LFS object returned 404.",
+  "integration_status": "V2 imports and tests actual artifact and research-budget modules; full service and SwarmFlow runtime not installed or verified."
+}

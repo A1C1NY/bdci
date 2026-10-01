@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "ledger_directory": "../.local/model-usage",
+  "credentials_file": "../.env.local",
+  "models": {
+    "deepseek": {
+      "model": "deepseek-v4.1-flash",
+      "base_url": "http://127.0.0.1:8080/v1",
+      "api_key_env": "DEEPSEEK_API_KEY",
+      "api_key_env_aliases": [
+        "RESEARCH_DEEPSEEK_API_KEY"
+      ],
+      "api_format": "chat",
+      "stream": false,
+      "token_budget": 1000000,
+      "input_token_reservation": 131072,
+      "max_input_bytes": 32768,
+      "max_output_tokens": 4096,
+      "timeout_seconds": 90,
+      "max_attempts": 2
+    },
+    "kimi": {
+      "model": "kimi-k3",
+      "base_url": "http://127.0.0.1:8080/v1",
+      "api_key_env": "RESEARCH_KIMI_API_KEY",
+      "api_format": "responses",
+      "token_budget": 1000000,
+      "input_token_reservation": 131072,
+      "max_input_bytes": 32768,
+      "max_output_tokens": 4096,
+      "timeout_seconds": 300,
+      "max_attempts": 2
+    }
+  },
+  "roles": {
+    "bounded_planner": "kimi",
+    "executor": "deepseek",
+    "critic": "kimi"
+  }
+}

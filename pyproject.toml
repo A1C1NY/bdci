@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jiuwen-research-lab"
+version = "0.6.0"
+description = "Evidence-backed local research workflow for CCF BDCI 1167"
+requires-python = ">=3.11"
+dependencies = ["jsonschema==4.26.0"]
+
+[project.optional-dependencies]
+research = ["aiofiles==23.2.1", "numpy==2.2.0", "matplotlib==3.10.0", "pydantic==2.10.6"]
+dev = ["pytest==9.0.3"]
+
+[project.scripts]
+research-lab = "research_lab.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+research_lab = ["dashboard_assets/*.html", "dashboard_assets/*.css", "dashboard_assets/*.js"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src", "vendor/jiuwenswarm"]
+testpaths = ["tests"]

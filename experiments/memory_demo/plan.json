@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "title": "Structured memory versus a recent-event window on synthetic key recall",
+  "question": "With equal record capacity, does keyed memory improve latest-value recall in noisy event streams?",
+  "hypothesis": "Storing the latest value of each key may improve recall relative to retaining recent events.",
+  "experiment": "experiment.py",
+  "methods": ["recent_window", "keyed_memory"],
+  "baseline": "recent_window",
+  "seeds": [11, 23, 37, 53, 71],
+  "primary_metric": "accuracy",
+  "direction": "maximize",
+  "timeout_seconds": 20,
+  "max_attempts": 2,
+  "limitations": [
+    "This is a synthetic engineering demonstration, not a novel research contribution or a competition-ready paper.",
+    "No language model or autonomous scientific agent is used in the offline experiment.",
+    "Capacity is measured in records, not tokens or bytes; equal record counts do not imply equal memory cost.",
+    "The generated distribution favors retrieval of structured key-value facts; conclusions do not establish general agent capability.",
+    "Seeds repeat one task generator; they are not independent real-world benchmarks."
+  ],
+  "references": []
+}

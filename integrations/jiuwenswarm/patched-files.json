@@ -1,0 +1,7 @@
+{
+  "jiuwenswarm/common/team_artifacts.py": "ba1abe3aa55e5172cda11923ac8533834432f544e1d57e1b5bff2d6a7dbd45d3",
+  "jiuwenswarm/common/research_budget.py": "d4cd42a4f86254a6e6e98a943e61ec29bfa3b1fb3750d38139301f3ea08c5574",
+  "jiuwenswarm/common/research_runtime.py": "8622851f2e855b1f95c668e5e1769f670570c3dbe908e45ea5f817ddbe73875e",
+  "tests/unit_tests/common/test_research_artifacts.py": "feb92ab1ea242bd0ad781658c24cc47c860454bdfd40e52e8f74ead27b3f5969",
+  "tests/unit_tests/common/test_research_runtime.py": "3da53d0c07f9589e8b39a2eaa3845011daa43de1dfa06a893da952a0c894094a"
+}

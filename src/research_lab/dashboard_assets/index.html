@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Research Lab · 科研进度</title><link rel="stylesheet" href="/assets/dashboard.css"><script src="/assets/dashboard.js" defer></script></head>
+<body><aside class="sidebar"><div class="brand"><span class="brand-icon">R</span><div>RESEARCH LAB<small>科研工作台 · 1167</small></div></div>
+<div class="nav-label">工作空间</div><nav aria-label="主导航">
+<button data-page="overview" class="active"><span>◈</span>科研总览</button>
+<button data-page="experiments"><span>▤</span>实验与结果</button>
+<button data-page="tasks"><span>◎</span>模型任务与监督</button>
+<button data-page="models"><span>◷</span>Token 与资源</button>
+<button data-page="evidence"><span>▧</span>证据与文档</button>
+<button data-page="events"><span>≋</span>活动日志</button></nav>
+<div class="sidebar-foot"><i class="live-dot"></i>本机实时监测<p>读取真实运行记录<br>模型建议由主监督者验收</p></div></aside>
+<main><header><div><div class="eyebrow">CCF BDCI / AGENT RESEARCH</div><h1 id="page-title">科研总览</h1></div>
+<div class="header-tools"><span id="connection" role="status">正在连接…</span><button id="pause" class="secondary">暂停刷新</button><button id="refresh" class="secondary">立即刷新</button></div></header>
+<div id="fatal" class="notice danger" hidden></div>
+<section id="page-overview" class="page">
+<div class="hero"><div><div class="eyebrow">CURRENT RESEARCH / 当前研究线</div><h2 id="research-title">加载研究记录…</h2><p id="research-question"></p></div><span class="pill blue">实验协议设计中</span><div class="hero-note" id="research-note"></div></div>
+<div id="stats" class="stats"></div>
+<article class="panel"><div class="section-head"><h2>受监督研究项目</h2><span class="muted">阶段、依赖与审核来自同一项目记录</span></div><div id="project-progress"></div></article>
+<article class="panel"><div class="section-head"><h2>第四版科研闭环</h2><span class="muted">真实决策、证据和问题关闭状态</span></div><div id="v4-progress"></div></article>
+<article class="panel"><div class="section-head"><h2>研究阶段</h2><span class="muted">由监督者维护，区别于历史运行完成率</span></div><div id="roadmap" class="roadmap"></div><div id="next-action" class="next-action"></div></article>
+<div class="two-col"><article class="panel"><div class="section-head"><h2>实验运行</h2><button class="text-button" data-jump="experiments">查看全部 →</button></div><div id="overview-runs"></div></article>
+<article class="panel"><div class="section-head"><h2>需要关注</h2><span id="alert-count" class="pill amber"></span></div><div id="alerts" class="alerts"></div></article></div>
+<article class="panel"><div class="section-head"><h2>最近活动</h2><button class="text-button" data-jump="events">完整日志 →</button></div><div id="overview-events" class="timeline"></div></article></section>
+<section id="page-experiments" class="page" hidden><div class="toolbar"><label>选择运行 <select id="run-select" aria-label="选择运行"></select></label><span class="muted">包含历史工程示例，完成运行不等于完成科研验证</span></div><div id="run-detail"></div></section>
+<section id="page-tasks" class="page" hidden><div class="notice">主监督者负责选题、协议与验收；模型只执行有限任务。任务状态来自记录，运行中标记不代表已经核验进程存活。</div><div class="toolbar"><label>任务状态 <select id="task-filter" aria-label="任务状态"><option value="all">全部任务</option><option value="attention">待处理 / 失败</option><option value="reviewed">已监督审核</option><option value="planned">未开始</option></select></label></div><div id="task-cards" class="task-cards"></div></section>
+<section id="page-models" class="page" hidden><div class="notice">已报告用量来自网关 usage；预留额度不是实测消耗。缓存输入与推理输出是明细，不重复计入总量。</div><div id="model-cards" class="two-col"></div><article class="panel"><div class="section-head"><h2>最近请求用量</h2><span class="muted">最近 30 条请求 · 蓝色为实测，虚线为未知</span></div><div id="token-chart"></div></article><article class="panel"><div class="section-head"><h2>请求明细</h2><label>模型 <select id="model-filter" aria-label="模型筛选"><option value="all">全部模型</option></select></label></div><div id="request-table" class="table-wrap"></div></article></section>
+<section id="page-evidence" class="page" hidden><div class="notice">完成运行的产物哈希每 15 秒重新检查；校验通过不代表科学结论正确。文档预览仅开放明确列出的研究产物。</div><div class="toolbar"><input id="artifact-search" type="search" aria-label="搜索产物" placeholder="搜索文件名或运行名称…"></div><div id="artifact-list" class="artifact-list"></div></section>
+<section id="page-events" class="page" hidden><div class="toolbar"><input id="event-search" type="search" aria-label="筛选活动" placeholder="筛选运行、事件或任务…"><span class="muted">每次运行读取尾部记录，汇总最近 80 条；不含原始提示词</span></div><article class="panel"><div id="event-list" class="timeline"></div></article></section>
+<footer>本地工作区 / 只读监测 <span id="updated-at"></span></footer></main>
+<dialog id="preview"><div class="preview-head"><h2 id="preview-title">文档预览</h2><button id="close-preview" class="secondary">关闭</button></div><div id="preview-meta" class="muted"></div><pre id="preview-content"></pre></dialog>
+</body></html>

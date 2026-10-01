@@ -1,0 +1,137 @@
+diff --git a/jiuwenswarm/common/team_artifacts.py b/jiuwenswarm/common/team_artifacts.py
+index f96db15..9b92a6c 100644
+--- a/jiuwenswarm/common/team_artifacts.py
++++ b/jiuwenswarm/common/team_artifacts.py
+@@ -29,6 +29,7 @@ not the shared member workspace (which mixes internal data with scratch).
+ from __future__ import annotations
+ 
+ import os
++import hashlib
+ from dataclasses import dataclass
+ from pathlib import Path
+ 
+@@ -136,9 +137,68 @@ def resolve_member_work_dir(
+     return work_dir
+ 
+ 
++def build_artifact_manifest(
++    root_dir: str | os.PathLike[str],
++    paths: list[str | os.PathLike[str]],
++) -> dict:
++    """Describe explicit task outputs using portable paths and SHA-256.
++
++    Call after writers finish. This is an integrity check, not an authenticity
++    signature or a filesystem sandbox. Symlinks resolving outside root are
++    rejected. The caller owns persistence and synchronization.
++    """
++    root = Path(root_dir).resolve(strict=True)
++    entries = []
++    seen = set()
++    for value in paths:
++        path = Path(value)
++        path = (path if path.is_absolute() else root / path).resolve(strict=True)
++        relative = path.relative_to(root).as_posix()
++        if relative in seen or not path.is_file():
++            raise ValueError(f"duplicate or non-file artifact: {relative}")
++        seen.add(relative)
++        checksum = hashlib.sha256()
++        size = 0
++        with path.open("rb") as stream:
++            for block in iter(lambda: stream.read(1024 * 1024), b""):
++                checksum.update(block)
++                size += len(block)
++        entries.append({"path": relative, "bytes": size, "sha256": checksum.hexdigest()})
++    return {"schema_version": 1, "artifacts": sorted(entries, key=lambda x: x["path"])}
++
++
++def verify_artifact_manifest(root_dir: str | os.PathLike[str], manifest: dict) -> list[str]:
++    """Return integrity errors, including malformed or escaping manifest entries."""
++    if not isinstance(manifest, dict) or manifest.get("schema_version") != 1:
++        return ["unsupported artifact manifest"]
++    entries = manifest.get("artifacts")
++    if not isinstance(entries, list) or not entries:
++        return ["artifact manifest is empty or malformed"]
++    errors = []
++    seen = set()
++    for entry in entries:
++        try:
++            if not isinstance(entry, dict) or set(entry) != {"path", "bytes", "sha256"}:
++                raise ValueError("malformed artifact entry")
++            value = entry["path"]
++            if not isinstance(value, str) or not value or Path(value).is_absolute():
++                raise ValueError("artifact path must be relative")
++            if value in seen:
++                raise ValueError("duplicate manifest path")
++            seen.add(value)
++            current = build_artifact_manifest(root_dir, [value])["artifacts"][0]
++            if current != entry:
++                errors.append(f"artifact changed: {value}")
++        except (OSError, ValueError, TypeError) as exc:
++            errors.append(str(exc))
++    return errors
++
++
+ __all__ = [
+     "TeamArtifactWorkspace",
+     "get_team_artifacts_dir",
+     "get_team_artifact_workspace",
+     "resolve_member_work_dir",
++    "build_artifact_manifest",
++    "verify_artifact_manifest",
+ ]
+diff --git a/jiuwenswarm/common/research_budget.py b/jiuwenswarm/common/research_budget.py
+new file mode 100644
+index 0000000..8f12451
+--- /dev/null
++++ b/jiuwenswarm/common/research_budget.py
+@@ -0,0 +1,50 @@
++"""Explicit, serializable attempt admission for bounded research workflows.
++
++The caller must persist a reservation BEFORE starting work and synchronize
++access (for example with its existing workspace lock). Reservations are never
++refunded: crashes and retries consume capacity. No wall-clock billing is implied.
++"""
++
++import math
++
++
++class BudgetExceeded(RuntimeError):
++    """No new execution may be admitted within the declared limits."""
++
++
++def reserve_research_attempt(ledger: dict, label: str, timeout_seconds: float) -> dict:
++    """Return a new ledger with one reserved attempt, without mutating input.
++
++    max_timeout_seconds caps the SUM of admitted subprocess wait timeouts,
++    not total elapsed time (startup, reports and process cleanup add overhead).
++    """
++    if not isinstance(ledger, dict) or set(ledger) != {
++        "max_attempts", "max_timeout_seconds", "reservations"
++    }:
++        raise ValueError("Malformed research budget ledger")
++    limit, seconds, reservations = (ledger[k] for k in
++                                    ("max_attempts", "max_timeout_seconds", "reservations"))
++    if type(limit) is not int or limit < 1:
++        raise ValueError("max_attempts must be a positive integer")
++    if type(seconds) not in (int, float) or not math.isfinite(seconds) or seconds <= 0:
++        raise ValueError("max_timeout_seconds must be positive and finite")
++    if not isinstance(reservations, list):
++        raise ValueError("reservations must be a list")
++    if not isinstance(label, str) or not label:
++        raise ValueError("label must be nonempty")
++    if type(timeout_seconds) not in (int, float) or not math.isfinite(timeout_seconds) or timeout_seconds <= 0:
++        raise ValueError("timeout_seconds must be positive and finite")
++    used = 0.0
++    for reservation in reservations:
++        if not isinstance(reservation, dict) or set(reservation) != {"label", "timeout_seconds"}:
++            raise ValueError("Malformed reservation")
++        value = reservation["timeout_seconds"]
++        if (not isinstance(reservation["label"], str) or not reservation["label"]
++                or type(value) not in (int, float) or not math.isfinite(value) or value <= 0):
++            raise ValueError("Malformed reservation value")
++        used += value
++    if len(reservations) >= limit or used + timeout_seconds > seconds:
++        raise BudgetExceeded("Research attempt/timeout allocation budget exhausted")
++    return {"max_attempts": limit, "max_timeout_seconds": seconds,
++            "reservations": [dict(item) for item in reservations] +
++                            [{"label": label, "timeout_seconds": timeout_seconds}]}

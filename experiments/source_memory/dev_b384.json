@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "title": "Source memory dev, 384 bytes",
+  "question": "How do explicit invalidation, source coverage and byte-limited eviction affect stale answers?",
+  "hypothesis": "Completeness gating may reduce false concrete answers at a cost in recall; protecting tombstones may have mixed effects.",
+  "experiment": "experiment.py",
+  "methods": [
+    "event_window_b384",
+    "latest_b384",
+    "source_b384",
+    "no_revoke_b384",
+    "no_version_b384",
+    "gated_b384",
+    "protected_b384"
+  ],
+  "baseline": "source_b384",
+  "seeds": [
+    11,
+    23,
+    37
+  ],
+  "primary_metric": "stale_rate",
+  "direction": "minimize",
+  "timeout_seconds": 60,
+  "max_attempts": 1,
+  "limitations": [
+    "Synthetic event semantics, not natural-language extraction or a real-world benchmark.",
+    "Byte ceiling is retained serialized state, not Python heap or model tokenizer cost.",
+    "Lower stale rate alone is not improvement: accuracy, coverage and abstention must be reported.",
+    "Stress changes generator parameters; it does not establish external semantic generalization.",
+    "Version watermark eviction permits stale replay even with completeness gating."
+  ],
+  "references": [
+    {
+      "title": "LongMemEval",
+      "url": "https://arxiv.org/abs/2410.10813",
+      "note": "Related work only; no dataset or reported scores reused."
+    }
+  ]
+}

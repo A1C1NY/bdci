@@ -1,0 +1,1 @@
+Local framework acceptance fixture. Threshold classification compares scalar thresholds. Linear calibration compares slopes using mean squared error. These examples test orchestration, not scientific capability.

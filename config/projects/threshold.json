@@ -1,0 +1,159 @@
+{
+  "schema_version": 5,
+  "id": "fixture-threshold",
+  "question": "本地框架验收：threshold，不属于正式科研结果",
+  "fixture_only": true,
+  "model_token_limit": 0,
+  "stages": [
+    {
+      "id": "literature",
+      "adapter": "literature_cards",
+      "role": "literature",
+      "inputs": {
+        "source": "fixture-literature.txt"
+      },
+      "config": {
+        "cards": [
+          {
+            "id": "fixture",
+            "input": "source",
+            "title": "Local fixture specification",
+            "url": "local:fixture-literature",
+            "locator": "paragraph 1",
+            "excerpt": "These examples test orchestration, not scientific capability.",
+            "supported_statement": "This is an orchestration fixture."
+          }
+        ]
+      }
+    },
+    {
+      "id": "baseline",
+      "adapter": "tabular_experiment",
+      "needs": [
+        "literature"
+      ],
+      "review": false,
+      "inputs": {
+        "dataset": "threshold-dev.json"
+      },
+      "config": {
+        "mode": "threshold",
+        "parameter": 0
+      }
+    },
+    {
+      "id": "proposal",
+      "adapter": "proposal",
+      "role": "proposal",
+      "needs": [
+        "baseline"
+      ],
+      "config": {
+        "hypothesis": "The bounded fixture parameter should improve the known fixture objective.",
+        "parent": "baseline",
+        "falsifier": "No development improvement",
+        "expected_effect": "Positive development gain",
+        "evidence_refs": [
+          "baseline"
+        ],
+        "changes": {
+          "parameter": 0.5
+        },
+        "change_schema": {
+          "type": "object",
+          "properties": {
+            "parameter": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 3
+            }
+          },
+          "required": [
+            "parameter"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    {
+      "id": "candidate",
+      "adapter": "tabular_experiment",
+      "needs": [
+        "proposal"
+      ],
+      "review": false,
+      "inputs": {
+        "dataset": "threshold-dev.json"
+      },
+      "config": {
+        "mode": "threshold",
+        "parameter": 0,
+        "candidate_dependency": "proposal"
+      }
+    },
+    {
+      "id": "freeze",
+      "adapter": "comparison",
+      "role": "freeze",
+      "needs": [
+        "baseline",
+        "candidate"
+      ],
+      "config": {
+        "baseline": "baseline",
+        "candidate": "candidate",
+        "min_gain": 0
+      }
+    },
+    {
+      "id": "holdout",
+      "adapter": "tabular_experiment",
+      "split": "holdout",
+      "needs": [
+        "freeze",
+        "proposal"
+      ],
+      "review": false,
+      "inputs": {
+        "dataset": "threshold-holdout.json"
+      },
+      "config": {
+        "mode": "threshold",
+        "parameter": 0,
+        "candidate_dependency": "proposal"
+      }
+    },
+    {
+      "id": "report",
+      "adapter": "evidence_report",
+      "role": "interpretation",
+      "needs": [
+        "freeze",
+        "holdout"
+      ],
+      "config": {
+        "claims": [
+          {
+            "id": "development_gain",
+            "sources": [
+              {
+                "stage": "freeze",
+                "pointer": "/gain"
+              }
+            ]
+          },
+          {
+            "id": "holdout_score",
+            "sources": [
+              {
+                "stage": "holdout",
+                "pointer": "/metrics/score"
+              }
+            ]
+          }
+        ],
+        "interpretation": "Local fixture only. No model, paper, or real research outcome is claimed."
+      }
+    }
+  ]
+}

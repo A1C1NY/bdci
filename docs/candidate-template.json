@@ -1,0 +1,20 @@
+{
+  "candidate_id": "member-topic-round",
+  "owner": "member-id",
+  "question": "",
+  "git_commit": "",
+  "protocol_sha256": "",
+  "dataset_source_and_version": "",
+  "dataset_sha256": "",
+  "primary_result_and_uncertainty": "",
+  "failures_and_missingness": "",
+  "models_and_reported_tokens": {},
+  "unknown_usage_reservations": {},
+  "pdf_sha256": "",
+  "review_score_and_scale": "",
+  "review_token_shared_privately": false,
+  "reproduction_checked_by": "",
+  "upstream_pr_url": "",
+  "submission_check_passed": false,
+  "note": "Private candidate record. Do not put review tokens, credentials or private data in this public repository."
+}

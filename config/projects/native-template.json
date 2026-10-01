@@ -1,0 +1,56 @@
+{
+  "schema_version": 5,
+  "id": "native-template",
+  "question": "Replace with a supervisor-approved bounded research task",
+  "model_token_limit": 200000,
+  "stages": [
+    {
+      "id": "brief",
+      "adapter": "artifact",
+      "role": "interpretation",
+      "config": {
+        "objective": "Replace this example brief before real execution",
+        "boundaries": [
+          "Return proposals only",
+          "Do not invent experiments"
+        ]
+      }
+    },
+    {
+      "id": "design",
+      "adapter": "native_tasks",
+      "role": "proposal",
+      "needs": [
+        "brief"
+      ],
+      "token_limit": 200000,
+      "max_attempts": 1,
+      "config": {
+        "tasks": [
+          {
+            "id": "design",
+            "phase": "Bounded design",
+            "model": "kimi",
+            "prompt": "Review the approved brief and propose one falsifiable hypothesis and one validation step. Do not claim execution.",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "hypothesis": {
+                  "type": "string"
+                },
+                "validation": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "hypothesis",
+                "validation"
+              ],
+              "additionalProperties": false
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
