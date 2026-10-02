@@ -6,3 +6,5 @@
 - ICLR 模板：<https://github.com/ICLR/Master-Template>，仅用于论文格式，不代表 ICLR 投稿或录用。模板文件从上游下载并按归档 SHA256 检查；上游 URL 如发生变化则拒绝不匹配内容，需要维护者核对后更新清单。保留下载文件中的原作者和许可说明。
 
 本仓库未替团队原创代码另行选择开源许可证；公开可见不等于统一授予 Apache-2.0 或其他许可。团队若决定正式开源，应确认原创代码授权，并保留各第三方的原有许可和署名。
+
+- 可选本地重排模型：[cross-encoder/ms-marco-MiniLM-L6-v2](https://huggingface.co/cross-encoder/ms-marco-MiniLM-L6-v2)，固定 `233902d25c440f23af6f7d6e94d2946bac0bee0a`，模型卡标注 Apache-2.0。下载保留模型卡，按 SHA256 核对 ONNX 权重与 tokenizer；模型文件不进入 Git。

@@ -8,6 +8,7 @@
 
 - [队友安装和运行指南](docs/TEAM_HANDOFF.md)：从零安装、个人模型配置、独立研究、论文与材料交接。
 - [新课题开发指南](docs/NEW_RESEARCH.md)：复现已有课题和开展新研究的区别，可信适配器接口。
+- [本地学习式重排研究](docs/LOCAL_RERANKING.md)：固定候选、参考 token 预算与配对统计；无需 API Key。
 - [协作和候选作品选择](docs/COLLABORATION.md)：分支、预算分配、冻结实验、评审与统一提交。
 - [框架契约](docs/framework-v5-reference.md)：项目阶段、监督决策、恢复、预算、数据与执行边界。
 - [第三方来源](THIRD_PARTY.md) · [验证记录](docs/VALIDATION.md)。

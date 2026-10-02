@@ -12,6 +12,7 @@ dependencies = ["jsonschema==4.26.0"]
 [project.optional-dependencies]
 research = ["aiofiles==23.2.1", "numpy==2.2.0", "matplotlib==3.10.0", "pydantic==2.10.6"]
 dev = ["pytest==9.0.3"]
+reranking = ["onnxruntime==1.24.4", "tokenizers==0.22.2"]
 
 [project.scripts]
 research-lab = "research_lab.cli:main"

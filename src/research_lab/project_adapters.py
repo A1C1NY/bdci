@@ -197,10 +197,12 @@ def native_tasks(context):
 def adapters():
     from .stale_adapters_v5 import retrieval, readers, judges, analysis
     from .study import manuscript_draft
+    from .reranking_study import run_retrieval, analyze
     return {"artifact": Adapter(artifact), "literature_search": Adapter(literature_search, network=True),
             "literature_cards": Adapter(literature_cards), "proposal": Adapter(proposal),
             "tabular_experiment": Adapter(tabular_experiment), "comparison": Adapter(comparison),
             "evidence_report": Adapter(evidence_report), "native_tasks": Adapter(native_tasks, paid=True),
             "stale_v5_retrieval": Adapter(retrieval), "stale_v5_readers": Adapter(readers, paid=True),
             "stale_v5_judges": Adapter(judges, paid=True), "stale_v5_analysis": Adapter(analysis),
-            "manuscript_draft": Adapter(manuscript_draft)}
+            "manuscript_draft": Adapter(manuscript_draft),
+            "local_reranking_retrieval": Adapter(run_retrieval), "local_reranking_analysis": Adapter(analyze)}
