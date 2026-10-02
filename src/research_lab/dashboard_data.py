@@ -261,6 +261,37 @@ class DashboardStore:
                 except (OSError, ValueError, KeyError, TypeError) as exc:
                     value["alerts"].append({"source": project_path.parent.name,
                         "message": "项目记录暂不可读: " + type(exc).__name__})
+            for path in sorted((self.root / "projects").glob("*/autonomy-state.json")):
+                try:
+                    state = self.read(path)
+                    config = self.read(path.parent / "inputs/config.json")
+                    project = {"id": state["id"], "autonomous": True, "revision": 1,
+                        "question": state["question"], "status": state["status"], "phase": state["phase"],
+                        "fixture_only": state.get("fixture_only", config["domain"] == "fixture_threshold"),
+                        "holdout_exposed": state["evaluation_exposed"], "attempt": state["attempt"],
+                        "max_candidates": config["max_candidates"], "trials": state["trials"],
+                        "best_score": state["best_score"], "model_calls": state["model_calls"],
+                        "model_tokens_charged_or_reserved": sum(state["charged_or_reserved"].values()),
+                        "model_token_limit": sum(config["model_budget"].values()),
+                        "reviews": state["reviews"], "last_error": state.get("last_error"),
+                        "stop_reason": state.get("stop_reason"),
+                        "progress": self.read(path.parent / "progress.json", {}), "artifacts": []}
+                    for op in state["operations"].values():
+                        if op["status"] != "completed":
+                            continue
+                        for name in op["files"]:
+                            item = path.parent / name
+                            if item.name in {"paper_draft.md", "paper.tex", "claims.json", "resource_report.json", "review_audit.json", "REPRODUCE.md"}:
+                                entry = self.register(item)
+                                if entry:
+                                    project["artifacts"].append(entry)
+                    value["projects"].append(project)
+                    value["totals"]["active"] += int(state["status"] == "running")
+                    value["events"].extend(self.events(path.parent / "events.jsonl", state["id"]))
+                    if state["status"] in ("waiting_for_gateway", "needs_attention", "budget_exhausted", "deadline_exceeded", "stopped"):
+                        value["alerts"].append({"source": state["id"], "message": state.get("last_error") or state.get("stop_reason") or state["status"]})
+                except (OSError, ValueError, KeyError, TypeError):
+                    value["alerts"].append({"source": path.parent.name, "message": "自主研究记录暂不可读"})
             value["events"] = sorted(value["events"], key=lambda e: e.get("time", ""), reverse=True)[:80]
             self.cache = json.loads(redact(json.dumps(value, ensure_ascii=False)))
             self.cache_at = time.monotonic()

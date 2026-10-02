@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "domain": "fixture_threshold",
+  "question": "Can a bounded automatic workflow select and evaluate a threshold without human stage approvals?",
+  "development": "threshold-dev.json",
+  "evaluation": "threshold-holdout.json",
+  "data_exposure": "synthetic_fixture",
+  "sources": [{"id": "fixture", "title": "Synthetic workflow source", "url": "https://example.invalid/synthetic-fixture", "path": "fixture-literature.txt"}],
+  "baseline": {"threshold": 0.9},
+  "context_bytes": 4096,
+  "min_gain": 0.01,
+  "max_candidates": 3,
+  "patience": 2,
+  "max_review_revisions": 2,
+  "max_model_calls": 40,
+  "max_wall_seconds": 3600,
+  "max_local_seconds": 60,
+  "roles": {"director": "kimi", "writer": "kimi", "reviewers": ["deepseek", "kimi"]},
+  "model_budget": {"deepseek": 0, "kimi": 0},
+  "compile_pdf": false
+}

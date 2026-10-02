@@ -1,5 +1,7 @@
 # 受监督框架契约（交接版 0.6.0）
 
+本页描述兼容保留的 `project` 工作流。0.7.0 的独立 `autonomous` 控制器见 [自主科研契约](AUTONOMOUS_RESEARCH.md)，不通过批量伪造人工 `decide` 来运行。
+
 统一入口为 `python -m research_lab project`。项目 schema_version 仍为 5；软件版本与项目数据格式版本不同。
 
 ## 阶段与审查

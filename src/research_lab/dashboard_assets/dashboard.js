@@ -4,7 +4,30 @@ const $=id=>document.getElementById(id), number=x=>Number(x||0).toLocaleString('
 const names={completed:'已完成',valid:'校验通过',invalid:'校验失败',pending:'待开始',planned:'未开始',in_progress:'进行中',running:'运行中',searching:'候选搜索',evaluating_holdout:'留出评测',writing:'生成报告',paused:'已暂停',failed:'失败',interrupted:'已中断',budget_exhausted:'预算不足',requesting:'模型请求中',awaiting_supervisor:'待监督审核',supervisor_reviewed:'已监督审核',settled:'已结算',unknown:'用量未知',active:'进行中',unavailable:'未校验',initialized:'已初始化',retain:'保留',reject:'淘汰',partially_accepted_as_design_proposals:'部分采纳，仅作为设计建议',not_started:'尚未开始',protocol_design:'实验协议设计中'};
 function el(tag,text,cls){const node=document.createElement(tag);if(text!==undefined&&text!==null)node.textContent=String(text);if(cls)node.className=cls;return node}
 Object.assign(names,{accepted:'已验收',awaiting_review:'待评审 / 审核',stale:'证据已失效',changes_requested:'需补充修改',rejected:'已拒绝',terminated:'已终止',ready:'可继续执行',completed_with_errors:'完成但有失败任务'});
-function renderProjects(){const root=clear('project-progress');for(const p of data.projects||[]){const card=panel(p.id+' · 版本 '+p.revision);card.querySelector('.section-head').append(status(p.status));card.append(el('p',p.question),el('p',`已用/保守预留 ${number(p.model_tokens_charged_or_reserved)} / ${number(p.model_token_limit)} Token · 正式评价${p.holdout_exposed?'已启动，禁止原协议调参':'尚未启动'}`,'muted'));const wrap=el('div',undefined,'table-wrap');wrap.append(table(['阶段','状态','依赖 / 阻塞','尝试'],p.stages.map(s=>[s.id,status(s.status),s.blocked_by.length?'等待 '+s.blocked_by.join(', '):s.needs.join(', ')||'无',s.attempts])));card.append(wrap);for(const d of (p.decisions||[]).slice(-4))card.append(el('p',`${d.stage} → ${d.action} · ${d.actor}：${d.reason}`));card.append(el('p','阶段验收表示流程决策已记录，不代表科学假设成立。','muted'));root.append(card)}if(!(data.projects||[]).length)empty(root,'尚未创建 V5 项目。使用 research-lab project init 初始化。')}
+Object.assign(names,{waiting_for_gateway:'等待模型网关',needs_attention:'异常待处理',deadline_exceeded:'达到时间上限',stopped:'按审查或停止条件结束',evaluated:'已完成实验'});
+function renderProjects(){
+ const root=clear('project-progress');
+ for(const p of data.projects||[]){
+  const card=panel(p.id+(p.autonomous?' · 自主研究':' · 版本 '+p.revision));
+  card.querySelector('.section-head').append(status(p.status));
+  card.append(el('p',p.question),el('p',`已结算/保留预留 ${number(p.model_tokens_charged_or_reserved)} / ${number(p.model_token_limit)} Token · 正式评价${p.holdout_exposed?'已开始，不能回到搜索':'尚未开始'}`,'muted'));
+  const wrap=el('div',undefined,'table-wrap');
+  if(p.autonomous){
+   card.append(el('p',`当前阶段：${p.phase} · 候选 ${p.attempt}/${p.max_candidates} · ${p.fixture_only?'合成验收，真实模型调用为零':'真实研究，模型调用意图 '+p.model_calls}`));
+   if(p.progress?.total)card.append(progress(p.progress.completed,p.progress.total),el('p',`${p.progress.split}: ${p.progress.completed}/${p.progress.total}`,'muted'));
+   wrap.append(table(['候选','状态','开发指标','优于当前最佳'],p.trials.map(t=>[t.attempt,status(t.status),t.result?.score?.toFixed(4)||'—',t.improved?'是':'否'])));
+   for(const r of (p.reviews||[]).slice(-3))card.append(el('p',`${r.id} · 机器审查：${r.reviews.map(x=>x.alias+': '+x.verdict).join(' / ')}`));
+   if(p.last_error||p.stop_reason)card.append(el('p',p.last_error||p.stop_reason,'warning'));
+   card.append(fileButtons(p.artifacts||[]),el('p','自动完成表示流程结束；机器审查不等于人工同行评审或论文录用。','muted'));
+  }else{
+   wrap.append(table(['阶段','状态','等待 / 依赖','尝试'],p.stages.map(s=>[s.id,status(s.status),s.blocked_by.length?'等待 '+s.blocked_by.join(', '):s.needs.join(', ')||'无',s.attempts])));
+   for(const d of (p.decisions||[]).slice(-4))card.append(el('p',`${d.stage} · ${d.action} · ${d.actor}：${d.reason}`));
+   card.append(el('p','阶段验收表示流程决策已记录，不等于科学结论成立。','muted'));
+  }
+  card.append(wrap);root.append(card);
+ }
+ if(!(data.projects||[]).length)empty(root,'尚未创建研究项目。');
+}
 function clear(id){const node=typeof id==='string'?$(id):id;node.replaceChildren();return node}
 function status(value){const tone=['completed','valid','settled','supervisor_reviewed'].includes(value)?'green':['failed','invalid','budget_exhausted'].includes(value)?'red':['unknown','awaiting_supervisor','interrupted'].includes(value)?'amber':['running','searching','in_progress','requesting','evaluating_holdout','writing','active'].includes(value)?'blue':'';return el('span',names[value]||value||'未知','pill '+tone)}
 function date(value){if(!value)return '—';const d=new Date(value);return Number.isNaN(d.valueOf())?value:d.toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})}

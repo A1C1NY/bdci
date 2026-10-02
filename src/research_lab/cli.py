@@ -5,6 +5,9 @@ import sys
 
 def main(argv=None):
     argv = sys.argv[1:] if argv is None else argv
+    if argv and argv[0] == "autonomous":
+        from .autonomous import main as autonomous_main
+        return autonomous_main(argv[1:])
     if argv and argv[0] == "project":
         from .project_cli import main as project_main
         return project_main(argv[1:])
