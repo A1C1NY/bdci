@@ -27,3 +27,6 @@ jobs:
       - run: python -m pytest -q
       - run: python -m pytest -q integrations/jiuwenswarm/pr_files/tests/unit_tests/common
       - run: python scripts/verify_projects_v5.py --output projects/ci-fixtures
+      - run: python -m research_lab discover init projects/ci-open-topic --config config/projects/open-topic-fixture.json
+      - run: python -m research_lab discover run projects/ci-open-topic --fixture
+      - run: python -c "import json; s=json.load(open('projects/ci-open-topic/autonomy-state.json',encoding='utf-8')); assert s['status']=='completed' and s['fixture_only'] and s['model_calls']==0"

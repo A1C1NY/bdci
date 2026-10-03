@@ -2,7 +2,7 @@
 
 This is the public development checkout, not the team's frozen competition archive.
 
-- Read README.md and docs/TEAM_HANDOFF.md before running research. Legacy projects remain supervised. The explicitly requested autonomous mode follows docs/AUTONOMOUS_RESEARCH.md and records machine reviews as machine decisions; never fabricate human acceptance, evidence, reviewer scores or submission success.
+- Read README.md and docs/TEAM_HANDOFF.md before running research. Legacy projects remain supervised. Autonomous modes follow docs/AUTONOMOUS_RESEARCH.md and docs/OPEN_TOPIC_RESEARCH.md and record machine reviews as machine decisions; never fabricate human acceptance, evidence, reviewer scores or submission success. Open topic selection must respect the installed executor registry and shared campaign budget; metadata discovery is not full-text verification or proof of novelty.
 - Use Python 3.12 and requirements.lock. Bootstrap pinned upstream source with scripts/bootstrap.py; do not commit vendor/ or silently upgrade pins.
 - Keep credentials, reviewer access tokens, original model responses, datasets, project state, papers and submission archives out of Git. Scan the staged index with scripts/check_share.py before pushing.
 - Offline fixtures and tests do not need API credentials. Real calls require a configured personal budget and user authorization; pass --allow-models only within that authorization. Keep unknown usage reservations and failure records.

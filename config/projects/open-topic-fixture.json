@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "brief": "Explore falsifiable questions about classification robustness and method choice under limited compute.",
+  "fixture": true,
+  "literature_provider": "fixture",
+  "search_results": 4,
+  "max_topic_rounds": 2,
+  "resources": ["cpu"],
+  "assets": [{
+    "id": "numeric_fixture",
+    "domain": "tabular_classification",
+    "description": "Synthetic independent numeric examples for orchestration tests only.",
+    "provenance": "Handcrafted synthetic software fixture; not empirical research data.",
+    "license": "Repository synthetic test fixture.",
+    "unit_of_analysis": "One synthetic independently identified row.",
+    "data_exposure": "synthetic_fixture",
+    "training": "classification-train.json",
+    "development": "classification-dev.json",
+    "evaluation": "classification-eval.json",
+    "baseline": {"algorithm": "centroid", "standardize": false, "k": 1, "l2": 0, "epochs": 10}
+  }],
+  "sources": [],
+  "min_gain": 0.01,
+  "max_candidates": 3,
+  "patience": 2,
+  "max_review_revisions": 2,
+  "max_model_calls": 60,
+  "max_wall_seconds": 3600,
+  "max_local_seconds": 60,
+  "roles": {"director": "kimi", "writer": "kimi", "reviewers": ["deepseek", "kimi"]},
+  "model_budget": {"deepseek": 0, "kimi": 0},
+  "compile_pdf": false
+}

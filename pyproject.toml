@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jiuwen-research-lab"
-version = "0.7.0"
+version = "0.8.0"
 description = "Evidence-backed local research workflow for CCF BDCI 1167"
 requires-python = ">=3.11"
 dependencies = ["jsonschema==4.26.0"]

@@ -5,15 +5,22 @@ const names={completed:'已完成',valid:'校验通过',invalid:'校验失败',p
 function el(tag,text,cls){const node=document.createElement(tag);if(text!==undefined&&text!==null)node.textContent=String(text);if(cls)node.className=cls;return node}
 Object.assign(names,{accepted:'已验收',awaiting_review:'待评审 / 审核',stale:'证据已失效',changes_requested:'需补充修改',rejected:'已拒绝',terminated:'已终止',ready:'可继续执行',completed_with_errors:'完成但有失败任务'});
 Object.assign(names,{waiting_for_gateway:'等待模型网关',needs_attention:'异常待处理',deadline_exceeded:'达到时间上限',stopped:'按审查或停止条件结束',evaluated:'已完成实验'});
+Object.assign(names,{search_plan:'规划文献检索',search:'检索与留存文献',topics:'提出课题',topic_review:'独立选题审查',select:'冻结选题',baseline:'基线实验',propose:'提出实验',design_review:'实验设计审查',development:'开发集实验',next:'决定后续实验',freeze:'冻结正式协议',evaluation:'正式评价',interpretation:'结果解释审查',write:'撰写论文',paper_review:'论文审查',export:'导出材料',done:'流程结束',infeasible:'缺少执行条件',pending_review:'等待机器审查',approved:'机器审查通过'});
 function renderProjects(){
  const root=clear('project-progress');
  for(const p of data.projects||[]){
-  const card=panel(p.id+(p.autonomous?' · 自主研究':' · 版本 '+p.revision));
+  const card=panel(p.id+(p.open_topic?' · 开放选题自主研究':p.autonomous?' · 自主研究':' · 版本 '+p.revision));
   card.querySelector('.section-head').append(status(p.status));
   card.append(el('p',p.question),el('p',`已结算/保留预留 ${number(p.model_tokens_charged_or_reserved)} / ${number(p.model_token_limit)} Token · 正式评价${p.holdout_exposed?'已开始，不能回到搜索':'尚未开始'}`,'muted'));
   const wrap=el('div',undefined,'table-wrap');
   if(p.autonomous){
-   card.append(el('p',`当前阶段：${p.phase} · 候选 ${p.attempt}/${p.max_candidates} · ${p.fixture_only?'合成验收，真实模型调用为零':'真实研究，模型调用意图 '+p.model_calls}`));
+   card.append(el('p',`当前阶段：${names[p.phase]||p.phase} · 实验候选 ${p.attempt}/${p.max_candidates} · ${p.fixture_only?'合成验收，真实模型调用为零':'真实研究，模型调用意图 '+p.model_calls}`));
+   if(p.open_topic){
+    card.append(el('p',`选题轮次：${Math.min(p.topic_round+1,p.max_topic_rounds)}/${p.max_topic_rounds} · 通过 ${p.topic_counts.approved} · 条件不足 ${p.topic_counts.infeasible} · 被拒绝 ${p.topic_counts.rejected}`));
+    card.append(table(['研究问题','实验能力','优先级','状态','缺口'],p.topics.map(t=>[t.question,t.domain,t.priority,status(t.status),t.issues.join('；')||'—'])));
+    if(p.selected_topic)card.append(el('p','已冻结课题：'+p.selected_topic.question));
+    for(const [alias,limit] of Object.entries(p.model_budgets))card.append(el('p',`${alias}: ${number(p.model_usage[alias])} / ${number(limit)} Token，包含选题、审查和写作`,'muted'));
+   }
    if(p.progress?.total)card.append(progress(p.progress.completed,p.progress.total),el('p',`${p.progress.split}: ${p.progress.completed}/${p.progress.total}`,'muted'));
    wrap.append(table(['候选','状态','开发指标','优于当前最佳'],p.trials.map(t=>[t.attempt,status(t.status),t.result?.score?.toFixed(4)||'—',t.improved?'是':'否'])));
    for(const r of (p.reviews||[]).slice(-3))card.append(el('p',`${r.id} · 机器审查：${r.reviews.map(x=>x.alias+': '+x.verdict).join(' / ')}`));

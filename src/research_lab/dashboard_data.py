@@ -267,7 +267,7 @@ class DashboardStore:
                     config = self.read(path.parent / "inputs/config.json")
                     project = {"id": state["id"], "autonomous": True, "revision": 1,
                         "question": state["question"], "status": state["status"], "phase": state["phase"],
-                        "fixture_only": state.get("fixture_only", config["domain"] == "fixture_threshold"),
+                        "fixture_only": state.get("fixture_only", config.get("domain") == "fixture_threshold"),
                         "holdout_exposed": state["evaluation_exposed"], "attempt": state["attempt"],
                         "max_candidates": config["max_candidates"], "trials": state["trials"],
                         "best_score": state["best_score"], "model_calls": state["model_calls"],
@@ -276,12 +276,21 @@ class DashboardStore:
                         "reviews": state["reviews"], "last_error": state.get("last_error"),
                         "stop_reason": state.get("stop_reason"),
                         "progress": self.read(path.parent / "progress.json", {}), "artifacts": []}
+                    if state.get("open_topic"):
+                        topics = state.get("topic_pool", [])
+                        project.update(open_topic=True, topic_round=state["topic_round"],
+                            max_topic_rounds=config["max_topic_rounds"], selected_topic=state.get("selected_topic"),
+                            topics=[{"key": t["key"], "question": t["topic"]["question"], "domain": t["topic"]["domain"],
+                                     "status": t["status"], "issues": t["issues"], "priority": t["topic"]["priority"]} for t in topics],
+                            topic_counts={status: sum(t["status"] == status for t in topics)
+                                          for status in ("infeasible", "pending_review", "approved", "rejected")},
+                            model_budgets=config["model_budget"], model_usage=state["charged_or_reserved"])
                     for op in state["operations"].values():
                         if op["status"] != "completed":
                             continue
                         for name in op["files"]:
                             item = path.parent / name
-                            if item.name in {"paper_draft.md", "paper.tex", "claims.json", "resource_report.json", "review_audit.json", "REPRODUCE.md"}:
+                            if item.name in {"paper_draft.md", "paper.tex", "claims.json", "resource_report.json", "review_audit.json", "REPRODUCE.md", "topic_audit.json"}:
                                 entry = self.register(item)
                                 if entry:
                                     project["artifacts"].append(entry)
