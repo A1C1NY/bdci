@@ -1,0 +1,410 @@
+{
+  "rows": [
+    {
+      "id": "4124b1e4-290a-4897-96f3-2f26fc160440:turn_bm25:deepseek",
+      "uid": "4124b1e4-290a-4897-96f3-2f26fc160440",
+      "arm": "turn_bm25",
+      "model": "deepseek",
+      "context_id": "4124b1e4-290a-4897-96f3-2f26fc160440:turn_bm25",
+      "context_sha256": "af21461b98707e12b876f6bcf266b6fad9dbcbad8c6c8648c5abcd9f1aa37985",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4056,
+      "answered": true,
+      "graded": true,
+      "pass": true
+    },
+    {
+      "id": "4124b1e4-290a-4897-96f3-2f26fc160440:turn_bm25:kimi",
+      "uid": "4124b1e4-290a-4897-96f3-2f26fc160440",
+      "arm": "turn_bm25",
+      "model": "kimi",
+      "context_id": "4124b1e4-290a-4897-96f3-2f26fc160440:turn_bm25",
+      "context_sha256": "af21461b98707e12b876f6bcf266b6fad9dbcbad8c6c8648c5abcd9f1aa37985",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4056,
+      "answered": true,
+      "graded": true,
+      "pass": true
+    },
+    {
+      "id": "4124b1e4-290a-4897-96f3-2f26fc160440:sentence_bm25:deepseek",
+      "uid": "4124b1e4-290a-4897-96f3-2f26fc160440",
+      "arm": "sentence_bm25",
+      "model": "deepseek",
+      "context_id": "4124b1e4-290a-4897-96f3-2f26fc160440:sentence_bm25",
+      "context_sha256": "2755f2e40e963ca7a30cfd6318eb408e42fbc40aee5fc0027320d75c77c72833",
+      "new": 0,
+      "old": 1,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4073,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "4124b1e4-290a-4897-96f3-2f26fc160440:sentence_bm25:kimi",
+      "uid": "4124b1e4-290a-4897-96f3-2f26fc160440",
+      "arm": "sentence_bm25",
+      "model": "kimi",
+      "context_id": "4124b1e4-290a-4897-96f3-2f26fc160440:sentence_bm25",
+      "context_sha256": "2755f2e40e963ca7a30cfd6318eb408e42fbc40aee5fc0027320d75c77c72833",
+      "new": 0,
+      "old": 1,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4073,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "a372e9cd-3e4b-45dd-9927-2c36d501c92c:turn_bm25:deepseek",
+      "uid": "a372e9cd-3e4b-45dd-9927-2c36d501c92c",
+      "arm": "turn_bm25",
+      "model": "deepseek",
+      "context_id": "a372e9cd-3e4b-45dd-9927-2c36d501c92c:turn_bm25",
+      "context_sha256": "98256043b6a34dd015fdcd6c721750d3e3650f14c0126f20a611b4313c68db67",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 1,
+      "bytes": 4081,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "a372e9cd-3e4b-45dd-9927-2c36d501c92c:turn_bm25:kimi",
+      "uid": "a372e9cd-3e4b-45dd-9927-2c36d501c92c",
+      "arm": "turn_bm25",
+      "model": "kimi",
+      "context_id": "a372e9cd-3e4b-45dd-9927-2c36d501c92c:turn_bm25",
+      "context_sha256": "98256043b6a34dd015fdcd6c721750d3e3650f14c0126f20a611b4313c68db67",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 1,
+      "bytes": 4081,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "a372e9cd-3e4b-45dd-9927-2c36d501c92c:sentence_bm25:deepseek",
+      "uid": "a372e9cd-3e4b-45dd-9927-2c36d501c92c",
+      "arm": "sentence_bm25",
+      "model": "deepseek",
+      "context_id": "a372e9cd-3e4b-45dd-9927-2c36d501c92c:sentence_bm25",
+      "context_sha256": "b1c304002ddfeccc9972f5f40e84badd0387ef1661bf289665f7ccd1e518e8b9",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 1,
+      "bytes": 4077,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "a372e9cd-3e4b-45dd-9927-2c36d501c92c:sentence_bm25:kimi",
+      "uid": "a372e9cd-3e4b-45dd-9927-2c36d501c92c",
+      "arm": "sentence_bm25",
+      "model": "kimi",
+      "context_id": "a372e9cd-3e4b-45dd-9927-2c36d501c92c:sentence_bm25",
+      "context_sha256": "b1c304002ddfeccc9972f5f40e84badd0387ef1661bf289665f7ccd1e518e8b9",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 1,
+      "bytes": 4077,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604:turn_bm25:deepseek",
+      "uid": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604",
+      "arm": "turn_bm25",
+      "model": "deepseek",
+      "context_id": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604:turn_bm25",
+      "context_sha256": "ec4c9525c10fb0de15c5edf92586bed134f25e8478cf80646a504bc8dcd020c8",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4052,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604:turn_bm25:kimi",
+      "uid": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604",
+      "arm": "turn_bm25",
+      "model": "kimi",
+      "context_id": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604:turn_bm25",
+      "context_sha256": "ec4c9525c10fb0de15c5edf92586bed134f25e8478cf80646a504bc8dcd020c8",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4052,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604:sentence_bm25:deepseek",
+      "uid": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604",
+      "arm": "sentence_bm25",
+      "model": "deepseek",
+      "context_id": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604:sentence_bm25",
+      "context_sha256": "ab1cd590d9e0366800cd10c3989a757312b343081de54d4fb34de60984c1d019",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4088,
+      "answered": true,
+      "graded": true,
+      "pass": true
+    },
+    {
+      "id": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604:sentence_bm25:kimi",
+      "uid": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604",
+      "arm": "sentence_bm25",
+      "model": "kimi",
+      "context_id": "cddef666-7d85-4ad7-9f1c-de5c2fd0c604:sentence_bm25",
+      "context_sha256": "ab1cd590d9e0366800cd10c3989a757312b343081de54d4fb34de60984c1d019",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4088,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "4d34b519-6633-4e87-b67e-040d8a4b012d:turn_bm25:deepseek",
+      "uid": "4d34b519-6633-4e87-b67e-040d8a4b012d",
+      "arm": "turn_bm25",
+      "model": "deepseek",
+      "context_id": "4d34b519-6633-4e87-b67e-040d8a4b012d:turn_bm25",
+      "context_sha256": "ac1b4d092b44d6bccddb65547c784b3ee50ee34a8aec266167da0fd248fe5c21",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4092,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "4d34b519-6633-4e87-b67e-040d8a4b012d:turn_bm25:kimi",
+      "uid": "4d34b519-6633-4e87-b67e-040d8a4b012d",
+      "arm": "turn_bm25",
+      "model": "kimi",
+      "context_id": "4d34b519-6633-4e87-b67e-040d8a4b012d:turn_bm25",
+      "context_sha256": "ac1b4d092b44d6bccddb65547c784b3ee50ee34a8aec266167da0fd248fe5c21",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4092,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "4d34b519-6633-4e87-b67e-040d8a4b012d:sentence_bm25:deepseek",
+      "uid": "4d34b519-6633-4e87-b67e-040d8a4b012d",
+      "arm": "sentence_bm25",
+      "model": "deepseek",
+      "context_id": "4d34b519-6633-4e87-b67e-040d8a4b012d:sentence_bm25",
+      "context_sha256": "115bc7552811aa4dd11234d8edce615e0df9501e51ac18763580d3ce5aa666cb",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4093,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    },
+    {
+      "id": "4d34b519-6633-4e87-b67e-040d8a4b012d:sentence_bm25:kimi",
+      "uid": "4d34b519-6633-4e87-b67e-040d8a4b012d",
+      "arm": "sentence_bm25",
+      "model": "kimi",
+      "context_id": "4d34b519-6633-4e87-b67e-040d8a4b012d:sentence_bm25",
+      "context_sha256": "115bc7552811aa4dd11234d8edce615e0df9501e51ac18763580d3ce5aa666cb",
+      "new": 0,
+      "old": 0,
+      "token_new": 0,
+      "update_session": 0,
+      "bytes": 4093,
+      "answered": true,
+      "graded": true,
+      "pass": false
+    }
+  ],
+  "summary": [
+    {
+      "model": "deepseek",
+      "arm": "sentence_bm25",
+      "attempted": 4,
+      "answered": 4,
+      "graded": 4,
+      "passed": 1,
+      "missing_as_failure": 0.25,
+      "n": 4,
+      "mean": 0.25,
+      "ci95": [
+        0.0,
+        0.75
+      ]
+    },
+    {
+      "model": "deepseek",
+      "arm": "turn_bm25",
+      "attempted": 4,
+      "answered": 4,
+      "graded": 4,
+      "passed": 1,
+      "missing_as_failure": 0.25,
+      "n": 4,
+      "mean": 0.25,
+      "ci95": [
+        0.0,
+        0.75
+      ]
+    },
+    {
+      "model": "kimi",
+      "arm": "sentence_bm25",
+      "attempted": 4,
+      "answered": 4,
+      "graded": 4,
+      "passed": 0,
+      "missing_as_failure": 0.0,
+      "n": 4,
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "model": "kimi",
+      "arm": "turn_bm25",
+      "attempted": 4,
+      "answered": 4,
+      "graded": 4,
+      "passed": 1,
+      "missing_as_failure": 0.25,
+      "n": 4,
+      "mean": 0.25,
+      "ci95": [
+        0.0,
+        0.75
+      ]
+    }
+  ],
+  "paired": [
+    {
+      "model": "deepseek",
+      "treatment": "sentence_bm25",
+      "control": "turn_bm25",
+      "scheduled_pairs": 4,
+      "missing_bounds": [
+        0.0,
+        0.0
+      ],
+      "n": 4,
+      "mean": 0.0,
+      "ci95": [
+        -0.75,
+        0.75
+      ]
+    },
+    {
+      "model": "deepseek",
+      "treatment": "oracle_update",
+      "control": "oracle_sham",
+      "scheduled_pairs": 0,
+      "missing_bounds": null,
+      "n": 0,
+      "mean": null,
+      "ci95": null
+    },
+    {
+      "model": "kimi",
+      "treatment": "sentence_bm25",
+      "control": "turn_bm25",
+      "scheduled_pairs": 4,
+      "missing_bounds": [
+        -0.25,
+        -0.25
+      ],
+      "n": 4,
+      "mean": -0.25,
+      "ci95": [
+        -0.75,
+        0.0
+      ]
+    },
+    {
+      "model": "kimi",
+      "treatment": "oracle_update",
+      "control": "oracle_sham",
+      "scheduled_pairs": 0,
+      "missing_bounds": null,
+      "n": 0,
+      "mean": null,
+      "ci95": null
+    }
+  ],
+  "association": [
+    {
+      "model": "deepseek",
+      "new_present": 0,
+      "n_responses": 8,
+      "pass_rate": 0.25,
+      "causal": false
+    },
+    {
+      "model": "deepseek",
+      "new_present": 1,
+      "n_responses": 0,
+      "pass_rate": null,
+      "causal": false
+    },
+    {
+      "model": "kimi",
+      "new_present": 0,
+      "n_responses": 8,
+      "pass_rate": 0.125,
+      "causal": false
+    },
+    {
+      "model": "kimi",
+      "new_present": 1,
+      "n_responses": 0,
+      "pass_rate": null,
+      "causal": false
+    }
+  ],
+  "attempted": 16,
+  "answered": 16,
+  "graded": 16,
+  "rubric": "STALE dimension 3 only; opposite-model judgments, no human validation"
+}

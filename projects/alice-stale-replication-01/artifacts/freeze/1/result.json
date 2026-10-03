@@ -1,0 +1,33 @@
+{
+  "values": {
+    "protocol": {
+      "question": "Does sentence-level versus turn-level BM25 packing change update evidence and reader answers?",
+      "study_type": "replication_pilot_not_new_discovery",
+      "dataset_sha256": "5f3ec375179e20e2e94469e018189188f34e2e7e5f21cbecbd99fcfa648c1876",
+      "n_scenarios": 400,
+      "reader_uids": [
+        "4124b1e4-290a-4897-96f3-2f26fc160440",
+        "a372e9cd-3e4b-45dd-9927-2c36d501c92c",
+        "cddef666-7d85-4ad7-9f1c-de5c2fd0c604",
+        "4d34b519-6633-4e87-b67e-040d8a4b012d"
+      ],
+      "seed": "alice-stale-20261003",
+      "primary": "sentence_bm25 minus turn_bm25 at 4096 UTF-8 history bytes",
+      "limitations": [
+        "Known previously used dataset; not a fresh blind test",
+        "Lexical evidence metric",
+        "Model judges, no human validation",
+        "Pilot sample; no novelty claim"
+      ],
+      "source_hashes": {
+        "src/research_lab/stale_packing_v5.py": "c290be15573a657ce8eeecb904bcacda93ab733e806c4d76054446e3eb6e1f5b",
+        "src/research_lab/stale_retrieval.py": "fd59422aec4947f8c6adc82fe985cf625d03f8577874546d1813fcd283219e82"
+      },
+      "oracle": "Disabled in this team starter"
+    }
+  },
+  "content": {},
+  "input_hashes": {
+    "protocol": "7a7e436c68c3b8b338983284b803c634c882e01289cc4667a881d09c03710647"
+  }
+}

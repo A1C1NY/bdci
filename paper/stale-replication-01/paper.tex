@@ -1,0 +1,189 @@
+\documentclass{article}
+\usepackage{iclr2026_conference,times}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx,booktabs,longtable,amsmath,amssymb,hyperref,url}
+\title{Sentence versus Turn Retrieval under Byte Budgets: An Evidence Audit on STALE}
+\author{Team Neng Gong Zhi Ren}
+\iclrfinalcopy\begin{document}\maketitle
+\lhead{CCF BDCI 2026 competition manuscript; not an ICLR submission}
+\begin{abstract}
+Smaller retrieval units can fit more passages into a context budget, but this need not preserve the statement that updates an older memory. We audit sentence and turn retrieval on previously exposed STALE data. The retrieval evaluation contains 400 scenarios and 54,000 query-method-budget records, covering 9 methods and 5 history budgets. The fixed primary sentence-minus-turn BM25 contrast in new-state containment is -12.08 percentage points (95\% bootstrap interval -14.58 to -9.58; n=400). At the primary budget, turn BM25 includes the new statement at 29.50\% and sentence BM25 at 17.42\%. Their update-session coverage is respectively 58.42\% and 64.58\%. The reader pilot includes 4 scenarios, 16 attempted answers, 16 valid answers and 16 model-graded answers. The small opposite-model-graded pilot cannot establish answer-quality transfer. Budget, joint-state, weighting and stratified diagnostics are reported with evidence hashes. Results describe this implementation and reused dataset; semantic correctness and performance on unseen conversations remain untested.
+\end{abstract}
+\section{Introduction}
+A user can revise a preference, constraint or personal fact after stating an older version. Retrieval must then provide a reader with evidence of the revision rather than merely a passage that resembles the question. The STALE benchmark makes this distinction observable through conversations containing old and updated states \citep{stale}. We examine a narrow part of this problem: whether smaller retrieval units improve access to the updated statement when history must fit within an explicit byte ceiling.
+
+Sentence retrieval is attractive because it can pack shorter passages into the same budget. However, splitting turns also changes document frequencies, average document length, ranking ties and serialization overhead. It may separate a statement from the surrounding text that makes it retrievable. The direction of the resulting effect cannot be assumed from unit size alone. We compare the actual implementations at equal serialized history ceilings.
+
+The retrieval evaluation contains 400 scenarios and 54,000 query-method-budget records, covering 9 methods and 5 history budgets. The primary question is the sentence-BM25 minus turn-BM25 difference in new-state containment at 4096 bytes. We preserve the frozen contrast and report all secondary configurations without selecting a new winner after inspecting their outcomes.
+
+The primary paired contrast is -12.08 percentage points (95\% bootstrap interval -14.58 to -9.58; n=400). The negative direction motivates a distinction between reaching the update session and preserving the exact updated statement. A separate reader pilot asks whether the two contexts support actions consistent with the updated state.
+
+This is retrospective reuse of an exposed dataset. Freezing this run makes its choices traceable, but does not create an unseen test set. The contribution is a documented comparison of retrieval units, packing policies and lexical diagnostics, with a clearly bounded reader pilot.
+
+\section{Related Work and Evaluation Scope}
+STALE asks whether agents recognize that their memories are no longer valid \citep{stale}. Its old-state, new-state and probing-query annotations allow us to inspect what a byte-limited context contains. Our reader evaluation adapts only its implicit task-compliance dimension. We do not implement the original paper's complete memory system or compare these scores with full-context leaderboard results.
+
+BM25 is a sparse term-frequency and document-frequency retrieval model \citep{bm25}. It provides an interpretable starting point for isolating implementation choices. Our sentence and turn indexes use the same tokenizer and BM25 constants, but their document collections differ. This comparison therefore measures the complete unit-and-index change, rather than a pure intervention on passage length.
+
+Recency, lexical change cues, reciprocal-rank fusion and score-per-byte ranking are fixed heuristics in this study. They provide diagnostic alternatives to the main comparison. Dense embedding retrieval, learned reranking, memory consolidation and semantic verification are outside the evaluated method set; the current evidence cannot establish superiority over those approaches.
+
+\section{Retrieval Units, Scoring and Packing}
+Only user turns enter the retrieval index. Each whole-turn document retains its session and turn position. The sentence index splits the same text deterministically at punctuation followed by whitespace, or at newlines, and retains a sentence ordinal. This is a simple boundary rule rather than a linguistic sentence parser. Assistant content is excluded from ranking.
+
+Tokenization lowercases text, extracts ASCII alphanumeric tokens and removes the fixed stopword set in the pinned lexical source. BM25 uses k1=1.2 and b=0.75; query terms are deduplicated. The inverse-document-frequency term is log(1 + (N - df + 0.5)/(df + 0.5)). Each index computes its own document counts, lengths and average length. A query's BM25 scores are divided by their maximum, with a denominator of one if all scores are zero.
+
+The time/cue variant adds alpha times normalized user-turn position and beta times a binary change-marker indicator, with default alpha=0.25 and beta=0.1. All sentences within a turn share that turn's recency. The cue regex matches markers such as now, no longer, switched, changed, stopped and actually in the candidate text. It does not use the query or gold update label.
+
+RRF combines lexical and recency ranks as 1/(60 + lexical\_rank) + 1/(60 + recency\_rank), with one-based ranks. Density divides the normalized lexical score by serialized byte length. Higher document ordinals resolve ranking ties. The turn-stop variant uses BM25 but stops at the first passage that does not fit; other variants skip oversized passages and continue.
+
+Byte accounting includes the bracketed session/turn headers, sentence headers where applicable, text and newline characters in UTF-8. Selected passages are restored to index order before serialization. Gold states and relevant-session annotations are used for host-side scoring, not ranking. The ceiling applies to history only, not the full API prompt or its token count.
+
+\section{Protocol, Outcomes and Uncertainty}
+The retrieval evaluation contains 400 scenarios and 54,000 query-method-budget records, covering 9 methods and 5 history budgets. The budgets are 1024, 2048, 4096, 8192, 16384 UTF-8 bytes. Each method-budget combination evaluates all three probing queries per scenario. The resulting rows share scenarios and should not be treated as independent observations.
+
+The primary new and old metrics test substring containment after NFKC normalization, whitespace collapse and case folding. They retain punctuation. The separate token-new metric compares contiguous word tokens after normalization and thus tolerates punctuation differences. Update-session coverage asks whether any selected document comes from the annotated last relevant session; it does not require that the updated statement itself was selected.
+
+The primary contrast is fixed in the project protocol: sentence BM25 minus turn BM25 at 4096 history bytes. Query indicators are first averaged within each scenario. The stored analysis resamples complete scenario values, or within-scenario paired differences, 10,000 times with random seed 20260930 and reports percentile intervals. This preserves clustering among a scenario's three questions. Paired intervals are read directly from the accepted evidence.
+
+Secondary method comparisons, other budgets, sensitivity settings and median-split strata are descriptive. Their intervals are not adjusted for multiple comparisons. The parameter grid is fully reported, rather than used to promote an outcome-selected method to the primary hypothesis. A fixed protocol on previously used data does not confer independent confirmatory validation.
+
+Reader UIDs were selected by sorting a seed-and-UID SHA-256 digest within each dataset type, taking two per type. The protocol records seed alice-stale-20261003. The reader pilot includes 4 scenarios, 16 attempted answers, 16 valid answers and 16 model-graded answers. Readers see only selected history and the dimension-three query. The protocol explicitly disables the oracle intervention; its empty analysis entries are bookkeeping, not failed trials.
+
+\section{Primary Retrieval Results and Budget Dependence}
+At the primary budget, turn BM25 includes the new statement at 29.50\% and sentence BM25 at 17.42\%. Their update-session coverage is respectively 58.42\% and 64.58\%. The paired sentence-minus-turn new-state contrast is -12.08 percentage points (95\% bootstrap interval -14.58 to -9.58; n=400). This is a difference in percentage points, not a relative percentage change. It shows lower lexical containment for this sentence implementation on this reused dataset.
+
+The greater update-session coverage of sentence BM25 coexists with lower new-state inclusion. Reaching a session can therefore be a weak proxy for retaining its decisive sentence. The aggregate difference is consistent with changes to ranking and passage granularity, but these summaries do not isolate which mechanism caused it.
+
+The old/new panels show that a context may retain an old statement, a new statement, both or neither. An old statement can help explain a revision when both are present, so old-state inclusion alone is not an answer-error rate. The joint-state figure separates these cases instead of interpreting every retained old statement as a failure.
+
+The budget plot includes stored intervals for the two BM25 indexes and the two time/cue indexes, plus paired sentence-minus-turn BM25 contrasts at every tested ceiling. It reports the complete budget sweep rather than extrapolating the primary result to arbitrary context sizes. More bytes may increase lexical availability while leaving semantic answer quality unresolved.
+
+\begin{table}[ht]\centering\small
+\caption{Retrieval at 4096 UTF-8 history bytes. Inclusion values are scenario-averaged percentages; bytes are mean serialized history sizes. These are lexical availability diagnostics.}
+\begin{tabular}{lrrrrr}
+\toprule
+Method & New & Old & Token new & Session & Bytes\\\midrule
+Turn BM25 & 29.50 & 49.42 & 29.83 & 58.42 & 4070.8\\
+Turn + time/cue & 35.00 & 47.67 & 35.42 & 59.50 & 4071.3\\
+Turn RRF & 20.83 & 0.50 & 21.25 & 40.92 & 4071.0\\
+Turn density & 13.58 & 47.58 & 13.75 & 52.00 & 4069.5\\
+Turn stop & 29.42 & 49.33 & 29.75 & 58.33 & 3917.8\\
+Sentence BM25 & 17.42 & 46.92 & 17.58 & 64.58 & 4083.1\\
+Sentence + time/cue & 24.50 & 45.92 & 24.92 & 66.25 & 4083.3\\
+Sentence RRF & 9.33 & 26.75 & 9.50 & 39.25 & 4082.8\\
+Sentence density & 7.92 & 46.17 & 7.92 & 45.17 & 4083.3\\
+\bottomrule\end{tabular}\end{table}
+\begin{figure}[ht]\centering
+\includegraphics[width=\linewidth]{stale_retrieval.png}
+\caption{Old and new normalized exact inclusion at the primary history budget. Bars and 95\% intervals use scenario means; turn and sentence methods use the same cases.}\end{figure}
+\begin{figure}[ht]\centering
+\includegraphics[width=\linewidth]{stale_budget_comparison.png}
+\caption{New-state availability across all tested budgets and stored paired sentence-minus-turn contrasts. Shading and error bars show scenario-bootstrap intervals. Budgets other than 4096 bytes are descriptive.}\end{figure}
+\begin{figure}[ht]\centering
+\includegraphics[width=\linewidth]{stale_joint_states.png}
+\caption{Joint old/new containment at 4096 bytes. The four categories exhaust the query records and are averaged within scenarios. Old-only containment is distinct from retaining both statements and is not itself a graded response error.}\end{figure}
+\section{Sensitivity, Strata and Lexical Recoverability}
+The time/cue grid varies alpha over 0, 0.1, 0.25, 0.5 and 0.75 and beta over 0, 0.1 and 0.25 using the turn index at 4096 bytes. The heatmap displays every stored setting. Higher recency weights do not produce uniformly better new-state containment. The grid supports a diagnostic account of the implemented heuristic, not a newly validated optimum.
+
+Median-split analyses examine user-history byte length, median serialized user-turn length and relative update-session position. Low includes values equal to the cut; high is strictly above it. The table records cuts and denominators because ties make group sizes unequal. Intervals describe each stratum's paired unit contrast, not a formal test of interaction.
+
+The full user-turn pool contains a normalized exact new-state match in 387/400 scenarios and a contiguous-token match in 396/400. Assistant exact matches occur in 0 scenarios, with 0 assistant-only exact matches. These are lexical recoverability measurements over concatenated role-specific text. The uncovered cases remain in the evaluation denominator. A paraphrase may still provide semantic support even without a literal or contiguous-token match.
+
+At 4096 bytes, turn RRF old-state inclusion is 0.50\%. Turn stop uses an average of 3917.8 bytes, compared with 4070.8 for turn BM25. The stop variant's reduced fill follows from its declared packing rule. The unusually low RRF old-state rate is retained as an observation requiring targeted inspection. Neither its cause nor an implementation defect is established by this aggregate report. These diagnostics are not used to discard cases or revise the frozen primary contrast.
+
+\begin{table}[ht]\centering\small
+\caption{Median-split strata for the primary new-state contrast. Cut units are bytes for history/turn length and a session-position fraction for update position. Delta and intervals are percentage points.}
+\begin{tabular}{lrrrr}
+\toprule
+Stratum & Cut & N & Delta & 95\% interval\\\midrule
+history bytes / low & 80409.500 & 200 & -11.33 & -15.00 to -7.67\\
+history bytes / high & 80409.500 & 200 & -12.83 & -16.33 to -9.33\\
+median turn bytes / low & 275.000 & 210 & -13.33 & -16.98 to -9.68\\
+median turn bytes / high & 275.000 & 190 & -10.70 & -14.04 to -7.37\\
+update fraction / low & 0.714 & 227 & -12.19 & -15.42 to -8.96\\
+update fraction / high & 0.714 & 173 & -11.95 & -15.99 to -7.90\\
+\bottomrule\end{tabular}\end{table}
+\begin{figure}[ht]\centering
+\includegraphics[width=\linewidth]{stale_sensitivity_strata.png}
+\caption{Left: all time/cue settings, with inclusion percentages annotated. Right: sentence-minus-turn differences in median-split strata, with stored intervals. All panels are descriptive and not corrected for multiple comparisons.}\end{figure}
+\section{Reader Pilot: Completion, Judgments and Missingness}
+The reader pilot includes 4 scenarios, 16 attempted answers, 16 valid answers and 16 model-graded answers. Each scenario is answered under both BM25 contexts by both reader aliases. The reader instruction asks for a natural English response within 120 words that respects changes supported by history. API aliases do not independently authenticate a model's weights or revision, and the results are attached to this particular recorded run.
+
+The opposite model grades the reader's responses using an adapted dimension-three rubric: a final action or recommendation must adhere to the new state; outdated constraints and overly generic responses fail. Responses are assigned stable shuffled labels, without method or reader identity in the judging prompt. The judge receives gold states and hidden logic only at this grading stage. This is model adjudication with a rubric, not a human label.
+
+deepseek has a paired sentence-minus-turn judged-pass contrast of +0.00 percentage points (95\% bootstrap interval -75.00 to +75.00; n=4). kimi has a paired sentence-minus-turn judged-pass contrast of -25.00 percentage points (95\% bootstrap interval -75.00 to +0.00; n=4). These intervals quantify empirical resampling uncertainty for the four observed paired cases per model. They do not support equivalence, generalization or a ranking of reader models. Reader and judge identities are coupled across models.
+
+The missing-data bounds coincide with point differences because every scheduled answer in this run was graded. They remain distinct from sampling intervals. In particular, an all-failure cell yields an empirical bootstrap interval of zero to zero; that is a degeneracy of resampling the observed outcomes, not proof of a zero population pass probability.
+
+All natural reader contexts in this sample lack a normalized exact new-state match. The new-present association group therefore has no observations, and no comparison of pass rates by evidence exposure can be estimated. A pass without an exact match may reflect paraphrased support, reader behavior or judge error; the current artifacts do not identify which explanation applies. Oracle comparisons were disabled by design.
+
+\begin{table}[ht]\centering\small
+\caption{Reader completion and judged passes. A/Ans/G/P denote attempted, answered, graded and passed. Intervals are the stored empirical bootstrap intervals, which are unstable for this small sample.}
+\begin{tabular}{lrrr}
+\toprule
+Model / arm & A/Ans/G/P & Pass (\%) & 95\% interval\\\midrule
+deepseek / sentence & 4/4/4/1 & 25.00 & 0.00 to 75.00\\
+deepseek / turn & 4/4/4/1 & 25.00 & 0.00 to 75.00\\
+kimi / sentence & 4/4/4/0 & 0.00 & 0.00 to 0.00\\
+kimi / turn & 4/4/4/1 & 25.00 & 0.00 to 75.00\\
+\bottomrule\end{tabular}\end{table}
+\begin{table}[ht]\centering\small
+\caption{Reader sentence-minus-turn contrasts in percentage points. Missing-data bounds assign each ungraded answer to failure or success over all scheduled pairs; they are not confidence intervals.}
+\begin{tabular}{lrrrr}
+\toprule
+Model & Pairs & Delta & 95\% interval & Missing bounds\\\midrule
+deepseek & 4 & 0.00 & -75.00 to 75.00 & 0.00 to 0.00\\
+kimi & 4 & -25.00 & -75.00 to 0.00 & -25.00 to -25.00\\
+\bottomrule\end{tabular}\end{table}
+\section{Discussion}
+The primary finding is a negative unit contrast for literal update availability, despite better session coverage for the sentence index. The distinction matters when evaluating retrieval systems: a location-based metric can improve while the exact required statement becomes less available. Evaluation should specify both the target statement and the serialization policy, rather than equating any retrieved update-session text with success.
+
+This study changes indexing and packing together. Sentence segmentation changes document frequencies and length normalization, while sentence headers consume bytes and tie resolution changes which passages fit. A mechanism study would need separately fixed scoring or controlled passage transformations. The present results should be read as an implementation comparison rather than a universal argument against sentence retrieval.
+
+The reader pilot does not establish whether the retrieval difference transfers to usable answers. Its cases have no exact-match exposure contrast and the outcome sample is small. Stronger evidence would require a prospectively specified larger reader sample, a meaningful exposure contrast, semantic support annotations and human validation. Such experiments would need a new protocol rather than retroactive changes to the accepted run.
+
+Detailed presentation improves the auditability of existing results, but does not enlarge the study. The current rewrite adds method definitions, stored paired uncertainty, diagnostic plots and explicit denominators while preserving every reported outcome. It does not rerun retrieval or substitute historical V4 results for the independent project evidence.
+
+\section{Limitations}
+Data reuse is the central inferential limitation. All retrieval scenarios belong to the same previously exposed public dataset; there is no fresh held-out population in this run. The frozen choices aid reproducibility, but exposure can influence the question and method set. Reported intervals describe empirical resampling of this dataset, not immunity to such bias.
+
+Exact and contiguous-token containment are lexical diagnostics. They can miss paraphrases and can count a statement without checking whether the reader interprets it correctly. Session containment is even coarser. The role-specific ceiling audit is also lexical and must not be interpreted as proving the absence of semantic information in assistant turns.
+
+The tested retrieval algorithms are sparse and fixed. Sentence splitting uses punctuation and newline boundaries; recency uses ordinal turn position rather than elapsed time. The code-specific tokenizer, change markers, rank ties and header costs affect results. Dense retrieval and learned reranking are absent, so external method superiority is unresolved.
+
+Reader grades cover a single dimension, four cases and fallible opposite-model judgments. No human adjudication, randomized evidence intervention or identifiable exposed/unexposed association is available. The oracle option was disabled. Secondary grid, strata and budget intervals are descriptive and their multiplicity prevents treating each interval as a discovery.
+
+\section{Conclusion}
+On this reused STALE dataset, the stored paired comparison shows lower new-state containment for sentence BM25 than turn BM25 at the fixed primary byte budget. Higher update-session coverage does not rescue literal statement availability. Budget, packing and weighting diagnostics make the result inspectable, while the small reader pilot leaves response-quality transfer unresolved. This report provides a reproducible record of those bounded findings.
+
+\appendix
+\section{Reproducibility and Evidence Boundaries}
+The independent project is alice-stale-replication-01. Accepted retrieval and reader artifacts are read from its result manifests and checked against the recorded SHA-256 values before building. The pinned method sources are checked against the frozen protocol. All tables and plots are transformations of accepted summaries; no dataset retrieval, reader requests or judge requests are repeated during document construction.
+
+The retained model draft is an unreviewed intermediate artifact. This edited report corrects its conflation of exact and punctuation-insensitive matching, replaces approximate arm-CI subtraction with the stored paired interval, and explains that oracle trials were disabled. It avoids interpreting a low RRF rate as proof of a defect. Original project artifacts are preserved; editorial transformations occur in this output directory.
+
+Run the local build\_document.py script with the project evidence in place. It produces document.json, paper.tex, the PDF, figure PNGs, a build manifest and a writing audit. The audit records input hashes and verifies that the historical V4 PDF and accepted project evidence were unchanged during the build. There is no automatic reviewer upload or submission.
+
+The primary-budget detail table is complemented by the full five-budget new-state table below. Every method remains present, including diagnostic variants. Bibliographic metadata for STALE follows the supplied reference manuscript; this editing pass performs no live literature search or external source validation.
+
+\begin{table}[ht]\centering\small
+\caption{Complete new-state inclusion percentages across all evaluated history budgets. Secondary budgets are descriptive; full intervals remain in the linked retrieval summary.}
+\begin{tabular}{lrrrrr}
+\toprule
+Method & 1024 & 2048 & 4096 & 8192 & 16384\\\midrule
+Turn BM25 & 8.08 & 17.83 & 29.50 & 41.42 & 53.92\\
+Turn + time/cue & 12.17 & 24.42 & 35.00 & 47.25 & 62.83\\
+Turn RRF & 0.33 & 6.25 & 20.83 & 34.58 & 48.83\\
+Turn density & 1.75 & 6.42 & 13.58 & 27.83 & 45.75\\
+Turn stop & 7.92 & 17.75 & 29.42 & 41.25 & 53.92\\
+Sentence BM25 & 6.50 & 10.67 & 17.42 & 26.17 & 36.83\\
+Sentence + time/cue & 10.50 & 16.67 & 24.50 & 36.50 & 56.58\\
+Sentence RRF & 0.50 & 3.83 & 9.33 & 17.17 & 28.00\\
+Sentence density & 1.42 & 3.75 & 7.92 & 15.92 & 29.00\\
+\bottomrule\end{tabular}\end{table}
+\begin{thebibliography}{9}
+\bibitem[Chao et al.(2026)]{stale} Hanxiang Chao, Yihan Bai, Rui Sheng, Tianle Li, and Yushi Sun. STALE: Can LLM Agents Know When Their Memories Are No Longer Valid? arXiv:2605.06527v1, 2026. \url{https://arxiv.org/abs/2605.06527}.
+\bibitem[Robertson and Zaragoza(2009)]{bm25} Stephen Robertson and Hugo Zaragoza. The Probabilistic Relevance Framework: BM25 and Beyond. Foundations and Trends in Information Retrieval, 3(4):333-389, 2009. \url{https://doi.org/10.1561/1500000019}.
+\end{thebibliography}
+\end{document}
