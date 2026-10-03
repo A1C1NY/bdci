@@ -52,6 +52,10 @@ def get_key(config, alias):
         if os.environ.get(name):
             return os.environ[name]
     path = Path(config["credentials_file"])
+    if not path.is_file():
+        fallback = ROOT / ".env"
+        if fallback.is_file():
+            path = fallback
     if path.is_file():
         values = {}
         for line in path.read_text(encoding="utf-8-sig").splitlines():

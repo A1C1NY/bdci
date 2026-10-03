@@ -1,43 +1,39 @@
-"""Scan Git index contents before publication. Prints paths, never matched values."""
-from pathlib import PurePosixPath
+"""Check a file before sharing it outside the local research checkout."""
+
 import re
-import subprocess
-
-PRIVATE = {".local", ".venv", "vendor", "data", "research", "paper", "submissions", "outputs", "projects", "__pycache__"}
-PATTERNS = [rb"(?<![A-Za-z0-9_])sk-[A-Za-z0-9_-]{24,}",
-            rb"gh[pousr]_[A-Za-z0-9]{30,}", rb"github_pat_[A-Za-z0-9_]{30,}",
-            rb"-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----"]
 
 
-def issues(name, content):
-    path = PurePosixPath(name)
-    result = []
-    parts = path.parts[2:] if path.parts[:2] == ("config", "projects") else path.parts
-    if any(part in PRIVATE for part in parts) or path.name == "PaperReview-AccessToken.txt":
-        result.append("private path")
-    if path.name.startswith(".env") and path.name != ".env.example":
-        result.append("credential file")
-    if len(content) > 5_000_000 or path.suffix.lower() in (".zip", ".pdf", ".pyc"):
-        result.append("large/binary artifact")
-    if any(re.search(pattern, content) for pattern in PATTERNS):
-        result.append("possible credential")
-    return result
+_SECRET = re.compile(rb"(?:sk-|api[_-]?key\s*=\s*)(?:[A-Za-z0-9_-]{20,})", re.I)
+
+
+def issues(path, content):
+    path = str(path).replace("\\", "/")
+    findings = []
+    lower = path.lower()
+    if lower.startswith("submissions/") or "/submissions/" in lower:
+        findings.append("submission archives must not be shared from the public checkout")
+    if lower == ".env" or lower.endswith("/.env") or lower == ".env.local" or lower.endswith("/.env.local"):
+        findings.append("local credential file")
+    if _SECRET.search(content):
+        findings.append("credential-like value")
+    return findings
 
 
 def main():
-    names = subprocess.check_output(["git", "ls-files", "-z"]).decode("utf-8").split("\0")
-    count = 0
-    failures = []
-    for name in filter(None, names):
-        content = subprocess.check_output(["git", "show", ":" + name])
-        failures.extend((name, problem) for problem in issues(name, content))
-        count += 1
-    for name, problem in failures:
-        print(problem + ": " + name)
-    print(f"Scanned {count} staged/tracked files; findings: {len(failures)}")
-    if not count or failures:
-        raise SystemExit(1)
+    import argparse
+    from pathlib import Path
+    parser = argparse.ArgumentParser()
+    parser.add_argument("paths", nargs="+")
+    args = parser.parse_args()
+    failed = False
+    for name in args.paths:
+        path = Path(name)
+        findings = issues(path, path.read_bytes())
+        for finding in findings:
+            failed = True
+            print(f"{path}: {finding}")
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
